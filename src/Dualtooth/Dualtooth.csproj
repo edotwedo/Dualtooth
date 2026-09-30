@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Dualtooth.Core\Dualtooth.Core.csproj" />
@@ -14,7 +14,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <!-- The UI is built in code, not the designer, so designer serialization hints don't apply. -->
     <NoWarn>$(NoWarn);WFO1000</NoWarn>
   </PropertyGroup>
