@@ -6,7 +6,8 @@ namespace Dualtooth.Core;
 /// <param name="Ediv">Encrypted diversifier. Zero for LE Secure Connections.</param>
 /// <param name="KeyLength">Encryption key size in bytes.</param>
 /// <param name="AddressType">0 = public, 1 = random static.</param>
-public sealed record LeKeys(byte[] Ltk, ulong ERand, uint Ediv, int KeyLength, int AddressType)
+/// <param name="Irk">Identity resolving key, 16 bytes as Windows stores them, if the device shared one.</param>
+public sealed record LeKeys(byte[] Ltk, ulong ERand, uint Ediv, int KeyLength, int AddressType, byte[]? Irk = null)
 {
     /// <summary>LE Secure Connections keys have no diversifier; legacy pairing keys do.</summary>
     public bool IsSecureConnections => ERand == 0 && Ediv == 0;

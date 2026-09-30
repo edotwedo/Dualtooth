@@ -355,17 +355,13 @@ sealed class DevicePlaylist : SkinControl
 
             var nameColor = selected ? Color.White : row.On ? Skin.Glow : Skin.GlowDim;
             var kind = row.Device.Kind.ToUpperInvariant();
-            var transport = row.Device.TransportLabel.ToUpperInvariant();
-            var transportWidth = TextRenderer.MeasureText(g, transport, Font, Size.Empty, flags).Width;
             var kindWidth = TextRenderer.MeasureText(g, kind, Font, Size.Empty, flags).Width;
-            var transportRect = new Rectangle(rect.Right - transportWidth - pad, rect.Y, transportWidth, rowHeight);
-            var kindRect = new Rectangle(transportRect.Left - kindWidth - S(12), rect.Y, kindWidth, rowHeight);
+            var kindRect = new Rectangle(rect.Right - kindWidth - pad, rect.Y, kindWidth, rowHeight);
             var nameLeft = (int)ledRect.Right + pad;
             var nameRect = new Rectangle(nameLeft, rect.Y, kindRect.Left - nameLeft - pad, rowHeight);
 
             TextRenderer.DrawText(g, row.Device.Name ?? "Unknown device", Font, nameRect, nameColor, flags | TextFormatFlags.EndEllipsis);
             TextRenderer.DrawText(g, kind, Font, kindRect, row.On ? Skin.Accent : Skin.GlowDim, flags);
-            TextRenderer.DrawText(g, transport, Font, transportRect, Skin.GlowDim, flags);
         }
 
         if (scrollbar > 0)

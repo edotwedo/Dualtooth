@@ -54,7 +54,8 @@ static class KeyReader
                     ERand: deviceKey.GetValue("ERand") is long erand ? unchecked((ulong)erand) : 0,
                     Ediv: deviceKey.GetValue("EDIV") is int ediv ? unchecked((uint)ediv) : 0,
                     KeyLength: deviceKey.GetValue("KeyLength") as int? ?? 16,
-                    AddressType: deviceKey.GetValue("AddressType") as int? ?? 0);
+                    AddressType: deviceKey.GetValue("AddressType") as int? ?? 0,
+                    Irk: deviceKey.GetValue("IRK") is byte[] { Length: 16 } irk && irk.Any(b => b != 0) ? irk : null);
             }
 
             foreach (var device in devices.Values)

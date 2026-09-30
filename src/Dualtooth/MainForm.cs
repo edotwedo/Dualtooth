@@ -6,31 +6,54 @@ using Dualtooth.Core;
 
 namespace Dualtooth;
 
-/// <summary>The one and only Dualtooth window, with a custom skin and a bit of personality.</summary>
+/// <summary>
+/// The one and only Dualtooth window. Laid out as four numbered steps, each saying what it's for,
+/// with a "What's next" panel that always tells you what to do.
+/// </summary>
 sealed class MainForm : Form
 {
     const string Tagline = "DUALTOOTH v0.1  //  ONE KEYBOARD, TWO OPERATING SYSTEMS  //  NOW WITH 100% FEWER BORROWED KEYBOARDS  //  PAIR ONCE, BOOT ANYWHERE  //  ";
     const int TitleBarHeight = 24;
 
+    const string AboutText =
+        "Dualtooth makes your Bluetooth devices work in both Windows and Linux on a dual-boot PC.\n\n" +
+        "Why it's needed: each device remembers only one pairing per computer, but Windows and Linux each " +
+        "make their own. Whichever system paired last wins, and the other one stops working.\n\n" +
+        "What it does: Dualtooth reads the pairings Windows already has (it only reads; nothing on Windows " +
+        "changes) and writes a small script. Run that script once in Linux, and both systems share the same " +
+        "pairing, so your devices just work in either one.";
+
     readonly LcdDisplay lcd = new();
-    readonly DevicePlaylist playlist = new() { EmptyText = "READING PAIRINGS..." };
+    readonly DevicePlaylist playlist = new() { EmptyText = "Reading your Bluetooth pairings..." };
     readonly SkinButton allButton = new() { Text = "ALL" };
     readonly SkinButton noneButton = new() { Text = "NONE" };
-    readonly SkinButton adapterButton = new() { Text = "ADAPTER ▸", Visible = false };
+    readonly SkinButton radioButton = new() { Text = "OTHER RADIO ▸", Visible = false };
     readonly LcdReadout pathReadout = new() { PathMode = true, Cursor = Cursors.Hand };
-    readonly SkinButton browseButton = new() { Text = "BROWSE" };
-    readonly SkinButton syncButton = new() { Text = "⇄   SYNC TO LINUX", Accent = true, Font = Skin.ButtonLarge, Enabled = false };
-    readonly LcdReadout readout = new() { Text = "WAKING UP THE RADIO..." };
-    readonly SkinButton showFileButton = new() { Text = "SHOW FILE", Enabled = false };
+    readonly SkinButton browseButton = new() { Text = "CHANGE" };
+    readonly SkinButton createButton = new() { Text = "⇄   CREATE LINUX SCRIPT", Accent = true, Font = Skin.ButtonLarge, Enabled = false };
+    readonly LcdReadout nextSteps = new() { Font = Skin.Guide };
+    readonly SkinButton showFileButton = new() { Text = "SHOW FILE", Visible = false };
+    readonly SkinButton helpButton = new() { Text = "?" };
     readonly SkinButton minimizeButton = new() { Text = "–" };
     readonly SkinButton closeButton = new() { Text = "×" };
+    readonly ToolTip tips = new() { InitialDelay = 300 };
 
     readonly float scale;
     readonly bool demo;
     List<AdapterKeys> adapters = [];
     int adapterIndex;
     BtAddress? currentAdapter;
+    bool scriptCreated;
     string savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "dualtooth-apply.sh");
+
+    // Step headings: number, title, one-line "what this is for", and their y position.
+    static readonly (int Number, string Title, string Hint, int Y)[] Steps =
+    [
+        (1, "CHOOSE YOUR DEVICES", "Lit up = will work in Linux too. Click a device to switch it on or off.", 126),
+        (2, "WHERE TO SAVE THE LINUX SCRIPT", "Anywhere Linux can open. Your Desktop is fine.", 374),
+        (3, "CREATE THE SCRIPT", "Writes one small file. Nothing on this PC changes.", 446),
+        (4, "WHAT'S NEXT", "", 536),
+    ];
 
     int S(float value) => (int)Math.Round(value * scale);
 
@@ -45,36 +68,48 @@ sealed class MainForm : Form
         BackColor = Skin.Body;
         DoubleBuffered = true;
         StartPosition = FormStartPosition.CenterScreen;
-        ClientSize = new Size(S(470), S(604));
+        ClientSize = new Size(S(470), S(684));
 
+        Place(helpButton, 396, 5, 20, 15);
         Place(minimizeButton, 420, 5, 20, 15);
         Place(closeButton, 444, 5, 20, 15);
-        Place(lcd, 14, 34, 442, 94);
-        Place(adapterButton, 204, 140, 88, 18);
-        Place(allButton, 298, 140, 48, 18);
-        Place(noneButton, 352, 140, 48, 18);
-        Place(playlist, 14, 166, 442, 234);
-        Place(pathReadout, 14, 428, 372, 24);
-        Place(browseButton, 394, 428, 62, 24);
-        Place(syncButton, 14, 464, 442, 42);
-        Place(readout, 14, 516, 442, 56);
-        Place(showFileButton, 376, 582, 80, 18);
+        Place(lcd, 14, 34, 442, 80);
+        Place(radioButton, 238, 128, 100, 18);
+        Place(allButton, 344, 128, 54, 18);
+        Place(noneButton, 402, 128, 54, 18);
+        Place(playlist, 14, 166, 442, 196);
+        Place(pathReadout, 14, 412, 372, 24);
+        Place(browseButton, 394, 412, 62, 24);
+        Place(createButton, 14, 486, 442, 40);
+        Place(showFileButton, 376, 538, 80, 18);
+        Place(nextSteps, 14, 562, 442, 96);
 
+        tips.SetToolTip(helpButton, "What is Dualtooth?");
+        tips.SetToolTip(allButton, "Switch on every device");
+        tips.SetToolTip(noneButton, "Switch off every device");
+        tips.SetToolTip(radioButton, "Your PC has pairings saved for more than one Bluetooth radio (for example an old USB dongle). Click to switch.");
+        tips.SetToolTip(browseButton, "Choose a different place to save the script");
+        tips.SetToolTip(pathReadout, "Click to choose a different place to save the script");
+        tips.SetToolTip(createButton, "Write the Linux script for the devices that are lit up");
+        tips.SetToolTip(showFileButton, "Open the folder with the script in File Explorer");
+
+        helpButton.Click += (_, _) => MessageBox.Show(this, AboutText, "What is Dualtooth?", MessageBoxButtons.OK, MessageBoxIcon.Information);
         minimizeButton.Click += (_, _) => WindowState = FormWindowState.Minimized;
         closeButton.Click += (_, _) => Close();
         allButton.Click += (_, _) => playlist.SetAll(true);
         noneButton.Click += (_, _) => playlist.SetAll(false);
-        adapterButton.Click += (_, _) => { adapterIndex = (adapterIndex + 1) % adapters.Count; ShowAdapter(); };
-        playlist.SelectionChanged += (_, _) => UpdateCounts();
+        radioButton.Click += (_, _) => { adapterIndex = (adapterIndex + 1) % adapters.Count; ShowAdapter(); };
+        playlist.SelectionChanged += (_, _) => { scriptCreated = false; UpdateStatus(); };
         browseButton.Click += (_, _) => BrowseForPath();
         pathReadout.Click += (_, _) => BrowseForPath();
-        syncButton.Click += (_, _) => Sync();
+        createButton.Click += (_, _) => CreateScript();
         showFileButton.Click += (_, _) => Process.Start("explorer.exe", $"/select,\"{savePath}\"");
         Load += async (_, _) => await LoadPairingsAsync();
 
         lcd.Marquee = Tagline;
-        lcd.Line1 = "READING BLUETOOTH PAIRINGS...";
+        lcd.Line1 = "LOOKING FOR YOUR BLUETOOTH...";
         pathReadout.Text = savePath;
+        nextSteps.Text = "Reading the Bluetooth pairings Windows has saved...";
     }
 
     void Place(Control control, int x, int y, int width, int height)
@@ -102,7 +137,6 @@ sealed class MainForm : Form
             adapters = [DemoAdapter()];
             currentAdapter = adapters[0].Address;
             ShowAdapter();
-            readout.Text = "DEMO MODE: THESE DEVICES ARE MADE UP.";
             return;
         }
 
@@ -115,27 +149,26 @@ sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            ShowError("COULDN'T READ BLUETOOTH PAIRINGS", ex.Message);
-            playlist.EmptyText = "NO SIGNAL";
+            ShowError("COULDN'T READ YOUR PAIRINGS", $"Dualtooth couldn't read the Bluetooth pairings Windows has saved.\n\nDetails: {ex.Message}");
+            playlist.EmptyText = "No devices to show.";
             playlist.Invalidate();
             return;
         }
 
         if (adapters.Count == 0)
         {
-            lcd.Line1 = "NO PAIRINGS FOUND";
-            playlist.EmptyText = "NOTHING PAIRED YET.\nPAIR YOUR DEVICES IN WINDOWS, THEN REOPEN DUALTOOTH.";
+            lcd.Line1 = "NO PAIRED DEVICES FOUND";
+            playlist.EmptyText = "Nothing is paired with this PC yet.";
             playlist.Invalidate();
-            readout.Text = "PAIR YOUR DEVICES IN WINDOWS FIRST, THEN COME BACK.";
+            nextSteps.Text = "Pair your Bluetooth devices in Windows first (Settings › Bluetooth & devices), then open Dualtooth again.";
             return;
         }
 
-        // Start on the adapter this PC is actually using.
+        // Start on the radio this PC is actually using.
         adapters = adapters.OrderByDescending(a => a.Address == currentAdapter).ToList();
         adapterIndex = 0;
-        adapterButton.Visible = adapters.Count > 1;
+        radioButton.Visible = adapters.Count > 1;
         ShowAdapter();
-        readout.Text = "CLICK A DEVICE TO SWITCH IT ON OR OFF, THEN HIT SYNC.";
     }
 
     static AdapterKeys DemoAdapter()
@@ -159,25 +192,42 @@ sealed class MainForm : Form
     void ShowAdapter()
     {
         var adapter = adapters[adapterIndex];
-        lcd.Line1 = adapter.Address == currentAdapter
-            ? $"ADAPTER {adapter.Address}  [ACTIVE]"
-            : $"ADAPTER {adapter.Address}  [NOT CONNECTED]";
-        playlist.EmptyText = "NO DEVICES ON THIS ADAPTER";
+        var inUse = adapter.Address == currentAdapter;
+        lcd.Line1 = (adapters.Count, inUse) switch
+        {
+            (1, _) => "BLUETOOTH RADIO FOUND",
+            (_, true) => $"RADIO {adapterIndex + 1} OF {adapters.Count}: THE ONE IN USE",
+            _ => $"RADIO {adapterIndex + 1} OF {adapters.Count}: NOT CONNECTED NOW",
+        };
+        tips.SetToolTip(lcd, $"Bluetooth radio address: {adapter.Address}");
+        playlist.EmptyText = "No devices are paired with this radio.";
         playlist.SetDevices(adapter.Devices);
         playlist.Focus();
     }
 
-    void UpdateCounts()
+    void UpdateStatus()
     {
-        lcd.Line2Color = Skin.Glow;
-        lcd.Line2 = $"{playlist.OnCount} OF {playlist.Count} DEVICES READY TO SYNC";
-        syncButton.Enabled = playlist.OnCount > 0;
+        var on = playlist.OnCount;
+        createButton.Enabled = on > 0;
+        showFileButton.Visible = scriptCreated;
+        lcd.Line2Color = on > 0 ? Skin.Glow : Skin.GlowDim;
+        lcd.Line2 = demo
+            ? "DEMO MODE: THESE DEVICES ARE MADE UP"
+            : $"{on} OF {playlist.Count} DEVICE{(playlist.Count == 1 ? "" : "S")} WILL WORK IN LINUX";
+
+        if (scriptCreated) return;
+        nextSteps.TextColor = Skin.Glow;
+        nextSteps.Text = on > 0
+            ? "Pick the devices you want in step 1, then press CREATE LINUX SCRIPT.\n\n" +
+              "Devices that already work in Windows are the ones Dualtooth can copy."
+            : "Switch on at least one device in step 1 to continue.";
     }
 
     void BrowseForPath()
     {
         using var dialog = new SaveFileDialog
         {
+            Title = "Where should Dualtooth save the Linux script?",
             FileName = Path.GetFileName(savePath),
             InitialDirectory = Path.GetDirectoryName(savePath),
             Filter = "Shell script (*.sh)|*.sh|All files (*.*)|*.*",
@@ -187,7 +237,7 @@ sealed class MainForm : Form
         pathReadout.Text = savePath;
     }
 
-    void Sync()
+    void CreateScript()
     {
         var adapter = adapters[adapterIndex];
         var selected = playlist.SelectedDevices.ToList();
@@ -199,28 +249,31 @@ sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            ShowError("COULDN'T SAVE THE SCRIPT", ex.Message);
+            ShowError("COULDN'T SAVE THE SCRIPT", $"The script couldn't be saved there. Try a different place in step 2.\n\nDetails: {ex.Message}");
             return;
         }
 
         var fileName = Path.GetFileName(savePath);
+        scriptCreated = true;
+        UpdateStatus();
         lcd.Party();
         lcd.Line2Color = Skin.Accent;
-        lcd.Line2 = $"SYNCED {selected.Count} DEVICE{(selected.Count == 1 ? "" : "S")}!";
-        readout.TextColor = Skin.Glow;
-        readout.Text =
-            $"NEXT: BOOT LINUX, OPEN A TERMINAL WHERE {fileName} IS SAVED, AND RUN:\n" +
-            $"   sudo bash {fileName}\n" +
-            "THEN DELETE THE SCRIPT. IT HOLDS YOUR PAIRING KEYS.";
-        showFileButton.Enabled = true;
+        lcd.Line2 = $"SCRIPT CREATED FOR {selected.Count} DEVICE{(selected.Count == 1 ? "" : "S")}!";
+        nextSteps.TextColor = Skin.Glow;
+        nextSteps.Text =
+            "1. Restart your PC into Linux.\n" +
+            $"2. Find {fileName} (it's on your Windows drive), right-click its folder › Open in Terminal.\n" +
+            $"3. Type  sudo bash {fileName}  and press Enter.\n" +
+            "4. Turn your devices off and on. Done!\n" +
+            "Afterwards, delete the script. It contains your pairing keys.";
     }
 
     void ShowError(string headline, string detail)
     {
         lcd.Line2Color = Skin.Red;
         lcd.Line2 = headline;
-        readout.TextColor = Skin.Red;
-        readout.Text = detail;
+        nextSteps.TextColor = Skin.Red;
+        nextSteps.Text = detail;
     }
 
     protected override void OnPaint(PaintEventArgs e)
@@ -237,12 +290,31 @@ sealed class MainForm : Form
 
         DrawTitleBar(g);
 
-        foreach (var screen in new Control[] { lcd, playlist, pathReadout, readout })
+        foreach (var screen in new Control[] { lcd, playlist, pathReadout, nextSteps })
             Skin.Well(g, screen.Bounds, scale);
 
-        DrawLabel(g, "DEVICES", 14, 143);
-        DrawLabel(g, "SAVE SCRIPT TO", 14, 410);
-        DrawLabel(g, "v0.1  ·  MIT  ·  github.com/edotwedo/Dualtooth", 14, 584);
+        foreach (var step in Steps)
+            DrawStep(g, step.Number, step.Title, step.Hint, step.Y);
+
+        TextRenderer.DrawText(g, "v0.1  ·  MIT  ·  github.com/edotwedo/Dualtooth", Skin.Label, new Point(S(14), S(666)), Skin.GlowDim);
+    }
+
+    void DrawStep(Graphics g, int number, string title, string hint, int y)
+    {
+        // Numbered bulb
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        var circle = new RectangleF(S(14), S(y), S(17), S(17));
+        using (var halo = new SolidBrush(Color.FromArgb(40, Skin.Glow)))
+            g.FillEllipse(halo, RectangleF.Inflate(circle, S(2), S(2)));
+        using (var ring = new Pen(Skin.Glow, Math.Max(1, 1.5f * scale)))
+            g.DrawEllipse(ring, circle);
+        g.SmoothingMode = SmoothingMode.None;
+        TextRenderer.DrawText(g, number.ToString(), Skin.Label, Rectangle.Round(circle), Skin.Glow,
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+
+        TextRenderer.DrawText(g, title, Skin.Label, new Point(S(38), S(y) + S(1)), Skin.BrightText);
+        if (hint.Length > 0)
+            TextRenderer.DrawText(g, hint, Skin.Hint, new Point(S(38), S(y + 18)), Skin.LabelText);
     }
 
     void DrawTitleBar(Graphics g)
@@ -264,9 +336,6 @@ sealed class MainForm : Form
         TextRenderer.DrawText(g, "dualtooth", Skin.Title, new Point(titleX, titleY), Skin.BrightText);
     }
 
-    void DrawLabel(Graphics g, string text, int x, int y) =>
-        TextRenderer.DrawText(g, text, Skin.Label, new Point(S(x), S(y)), Skin.LabelText);
-
     // Rounded window corners on Windows 11 (ignored elsewhere).
     protected override void OnHandleCreated(EventArgs e)
     {
@@ -282,6 +351,12 @@ sealed class MainForm : Form
         if (e.Button != MouseButtons.Left) return;
         ReleaseCapture();
         SendMessage(Handle, 0xA1 /* WM_NCLBUTTONDOWN */, 2 /* HTCAPTION */, 0);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) tips.Dispose();
+        base.Dispose(disposing);
     }
 
     [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);

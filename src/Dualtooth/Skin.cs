@@ -22,6 +22,8 @@ static class Skin
     public static readonly Font LcdLarge = new("Consolas", 13f, FontStyle.Bold);
     public static readonly Font LcdSmall = new("Consolas", 9.5f, FontStyle.Bold);
     public static readonly Font Label = new("Segoe UI", 7.5f, FontStyle.Bold);
+    public static readonly Font Hint = new("Segoe UI", 8f);
+    public static readonly Font Guide = new("Consolas", 9f, FontStyle.Bold);
     public static readonly Font Title = new("Segoe UI Semibold", 9.5f);
     public static readonly Font ButtonLarge = new("Segoe UI", 11f, FontStyle.Bold);
 
