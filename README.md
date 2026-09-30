@@ -15,10 +15,9 @@ the other one doesn't. Dualtooth copies Windows' keys into Linux so both use the
 
 **[Download Dualtooth.exe](https://github.com/edotwedo/Dualtooth/releases/latest)**: one file, runs on 64-bit Windows 10 or 11, nothing to install.
 
-1. **Pair each device in Linux first, then in Windows.** (Skip this if they already work in Windows
-   and you're fine re-pairing them there once.) Windows must be the *last* place you paired them.
-2. In Windows, run **Dualtooth.exe** and click **Yes** on the admin prompt.
-3. Tick the devices you want, then click **Generate Linux script**.
+1. **Make sure your devices work in Windows.** If one doesn't, pair it in Windows now.
+2. Run **Dualtooth.exe** and click **Yes** on the admin prompt.
+3. Click the devices you want so their lights come on, then hit **SYNC TO LINUX**.
 4. Boot Linux, open a terminal in the folder with the script (Linux can read your Windows drive), and run:
    ```
    sudo bash dualtooth-apply.sh
