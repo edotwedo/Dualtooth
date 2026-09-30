@@ -6,11 +6,11 @@ using Dualtooth.Core;
 
 namespace Dualtooth;
 
-/// <summary>The one and only Dualtooth window, skinned in the spirit of late-90s media players.</summary>
+/// <summary>The one and only Dualtooth window, with a custom skin and a bit of personality.</summary>
 sealed class MainForm : Form
 {
-    const string Tagline = "DUALTOOTH v0.1  ***  ONE KEYBOARD, TWO OPERATING SYSTEMS  ***  IT REALLY PAIRS THE PENGUIN'S ASS  ***  ";
-    const int TitleBarHeight = 20;
+    const string Tagline = "DUALTOOTH v0.1  //  ONE KEYBOARD, TWO OPERATING SYSTEMS  //  NOW WITH 100% FEWER BORROWED KEYBOARDS  //  PAIR ONCE, BOOT ANYWHERE  //  ";
+    const int TitleBarHeight = 24;
 
     readonly LcdDisplay lcd = new();
     readonly DevicePlaylist playlist = new() { EmptyText = "READING PAIRINGS..." };
@@ -18,11 +18,11 @@ sealed class MainForm : Form
     readonly SkinButton noneButton = new() { Text = "NONE" };
     readonly SkinButton adapterButton = new() { Text = "ADAPTER ▸", Visible = false };
     readonly LcdReadout pathReadout = new() { PathMode = true, Cursor = Cursors.Hand };
-    readonly SkinButton ejectButton = new() { Text = "⏏", Font = new Font("Segoe UI Symbol", 10f, FontStyle.Bold) };
-    readonly SkinButton syncButton = new() { Text = "▶   SYNC TO LINUX", Accent = true, Font = Skin.ButtonLarge, Enabled = false };
-    readonly LcdReadout readout = new() { Text = "WARMING UP THE TUBES..." };
+    readonly SkinButton browseButton = new() { Text = "BROWSE" };
+    readonly SkinButton syncButton = new() { Text = "⇄   SYNC TO LINUX", Accent = true, Font = Skin.ButtonLarge, Enabled = false };
+    readonly LcdReadout readout = new() { Text = "WAKING UP THE RADIO..." };
     readonly SkinButton showFileButton = new() { Text = "SHOW FILE", Enabled = false };
-    readonly SkinButton minimizeButton = new() { Text = "_" };
+    readonly SkinButton minimizeButton = new() { Text = "–" };
     readonly SkinButton closeButton = new() { Text = "×" };
 
     readonly float scale;
@@ -47,18 +47,18 @@ sealed class MainForm : Form
         StartPosition = FormStartPosition.CenterScreen;
         ClientSize = new Size(S(470), S(604));
 
-        Place(minimizeButton, 438, 5, 12, 11);
-        Place(closeButton, 452, 5, 12, 11);
-        Place(lcd, 12, 30, 446, 96);
-        Place(allButton, 300, 134, 44, 17);
-        Place(noneButton, 348, 134, 44, 17);
-        Place(adapterButton, 208, 134, 88, 17);
-        Place(playlist, 12, 158, 446, 244);
-        Place(pathReadout, 12, 428, 404, 24);
-        Place(ejectButton, 422, 428, 36, 24);
-        Place(syncButton, 12, 462, 446, 42);
-        Place(readout, 12, 514, 446, 58);
-        Place(showFileButton, 378, 580, 80, 17);
+        Place(minimizeButton, 420, 5, 20, 15);
+        Place(closeButton, 444, 5, 20, 15);
+        Place(lcd, 14, 34, 442, 94);
+        Place(adapterButton, 204, 140, 88, 18);
+        Place(allButton, 298, 140, 48, 18);
+        Place(noneButton, 352, 140, 48, 18);
+        Place(playlist, 14, 166, 442, 234);
+        Place(pathReadout, 14, 428, 372, 24);
+        Place(browseButton, 394, 428, 62, 24);
+        Place(syncButton, 14, 464, 442, 42);
+        Place(readout, 14, 516, 442, 56);
+        Place(showFileButton, 376, 582, 80, 18);
 
         minimizeButton.Click += (_, _) => WindowState = FormWindowState.Minimized;
         closeButton.Click += (_, _) => Close();
@@ -66,7 +66,7 @@ sealed class MainForm : Form
         noneButton.Click += (_, _) => playlist.SetAll(false);
         adapterButton.Click += (_, _) => { adapterIndex = (adapterIndex + 1) % adapters.Count; ShowAdapter(); };
         playlist.SelectionChanged += (_, _) => UpdateCounts();
-        ejectButton.Click += (_, _) => BrowseForPath();
+        browseButton.Click += (_, _) => BrowseForPath();
         pathReadout.Click += (_, _) => BrowseForPath();
         syncButton.Click += (_, _) => Sync();
         showFileButton.Click += (_, _) => Process.Start("explorer.exe", $"/select,\"{savePath}\"");
@@ -169,7 +169,7 @@ sealed class MainForm : Form
 
     void UpdateCounts()
     {
-        lcd.Line2Color = Skin.Green;
+        lcd.Line2Color = Skin.Glow;
         lcd.Line2 = $"{playlist.OnCount} OF {playlist.Count} DEVICES READY TO SYNC";
         syncButton.Enabled = playlist.OnCount > 0;
     }
@@ -205,9 +205,9 @@ sealed class MainForm : Form
 
         var fileName = Path.GetFileName(savePath);
         lcd.Party();
-        lcd.Line2Color = Skin.Cyan;
+        lcd.Line2Color = Skin.Accent;
         lcd.Line2 = $"SYNCED {selected.Count} DEVICE{(selected.Count == 1 ? "" : "S")}!";
-        readout.TextColor = Skin.Green;
+        readout.TextColor = Skin.Glow;
         readout.Text =
             $"NEXT: BOOT LINUX, OPEN A TERMINAL WHERE {fileName} IS SAVED, AND RUN:\n" +
             $"   sudo bash {fileName}\n" +
@@ -229,53 +229,53 @@ sealed class MainForm : Form
         var g = e.Graphics;
         var outer = ClientRectangle;
 
-        // Body: subtle vertical sheen
-        using (var body = new LinearGradientBrush(outer, ControlPaint.Light(Skin.Body, 0.12f), Skin.Body, LinearGradientMode.Vertical))
+        // Body: a soft indigo glow from the top
+        using (var body = new LinearGradientBrush(outer, ControlPaint.Light(Skin.Body, 0.18f), Skin.Body, LinearGradientMode.Vertical))
             g.FillRectangle(body, outer);
-        Skin.Bevel(g, outer, raised: true, width: S(2));
+        using (var edge = new Pen(Skin.BodyLight))
+            g.DrawRectangle(edge, 0, 0, outer.Width - 1, outer.Height - 1);
 
         DrawTitleBar(g);
 
-        // Sunken wells around the "screens"
         foreach (var screen in new Control[] { lcd, playlist, pathReadout, readout })
-            Skin.Bevel(g, Rectangle.Inflate(screen.Bounds, S(2), S(2)), raised: false, width: S(2));
+            Skin.Well(g, screen.Bounds, scale);
 
-        DrawLabel(g, "DEVICES", 14, 136);
-        DrawLabel(g, "SAVE SCRIPT TO", 14, 412);
-        DrawLabel(g, "v0.1  ·  MIT  ·  github.com/edotwedo/Dualtooth", 14, 582);
+        DrawLabel(g, "DEVICES", 14, 143);
+        DrawLabel(g, "SAVE SCRIPT TO", 14, 410);
+        DrawLabel(g, "v0.1  ·  MIT  ·  github.com/edotwedo/Dualtooth", 14, 584);
     }
 
     void DrawTitleBar(Graphics g)
     {
-        var bar = new Rectangle(S(3), S(3), ClientSize.Width - S(6), S(TitleBarHeight) - S(2));
-        using (var brush = new LinearGradientBrush(bar, Skin.BodyLight, Skin.Body, LinearGradientMode.Vertical))
-            g.FillRectangle(brush, bar);
-
-        const string title = "D U A L T O O T H";
-        var titleSize = TextRenderer.MeasureText(g, title, Skin.Label);
-        var titleX = (ClientSize.Width - titleSize.Width) / 2;
-        var titleY = bar.Y + (bar.Height - titleSize.Height) / 2;
-
-        // Ribbed grooves either side of the title
-        using var light = new Pen(Skin.BodyLight);
-        using var dark = new Pen(Skin.BodyDark);
-        var grooveEnd = minimizeButton.Left - S(8);
-        for (var i = 0; i < 3; i++)
+        // Logo: two linked rings, one for each OS
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        float ring = S(11), y = (S(TitleBarHeight) - ring) / 2f + S(2);
+        using (var left = new Pen(Skin.Glow, Math.Max(1.5f, 1.8f * scale)))
+        using (var right = new Pen(Skin.Accent, Math.Max(1.5f, 1.8f * scale)))
         {
-            var y = bar.Y + S(5) + i * S(3);
-            g.DrawLine(dark, S(10), y, titleX - S(8), y);
-            g.DrawLine(light, S(10), y + 1, titleX - S(8), y + 1);
-            g.DrawLine(dark, titleX + titleSize.Width + S(8), y, grooveEnd, y);
-            g.DrawLine(light, titleX + titleSize.Width + S(8), y + 1, grooveEnd, y + 1);
+            g.DrawEllipse(left, S(14), y, ring, ring);
+            g.DrawEllipse(right, S(14) + ring * 0.6f, y, ring, ring);
         }
-        TextRenderer.DrawText(g, title, Skin.Label, new Point(titleX + 1, titleY + 1), Skin.BodyDark);
-        TextRenderer.DrawText(g, title, Skin.Label, new Point(titleX, titleY), Skin.Cyan);
+        g.SmoothingMode = SmoothingMode.None;
+
+        var titleX = S(14) + (int)(ring * 1.6f) + S(8);
+        var titleSize = TextRenderer.MeasureText(g, "dualtooth", Skin.Title);
+        var titleY = S(2) + (S(TitleBarHeight) - titleSize.Height) / 2;
+        TextRenderer.DrawText(g, "dualtooth", Skin.Title, new Point(titleX, titleY), Color.FromArgb(0xE4, 0xE1, 0xF7));
     }
 
     void DrawLabel(Graphics g, string text, int x, int y) =>
         TextRenderer.DrawText(g, text, Skin.Label, new Point(S(x), S(y)), Skin.LabelText);
 
-    // Drag the window from anywhere that isn't a control, like the old players.
+    // Rounded window corners on Windows 11 (ignored elsewhere).
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        var round = 2; // DWMWCP_ROUND
+        DwmSetWindowAttribute(Handle, 33 /* DWMWA_WINDOW_CORNER_PREFERENCE */, ref round, sizeof(int));
+    }
+
+    // Drag the window from anywhere that isn't a control.
     protected override void OnMouseDown(MouseEventArgs e)
     {
         base.OnMouseDown(e);
@@ -284,6 +284,7 @@ sealed class MainForm : Form
         SendMessage(Handle, 0xA1 /* WM_NCLBUTTONDOWN */, 2 /* HTCAPTION */, 0);
     }
 
+    [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     [DllImport("user32.dll")] static extern bool ReleaseCapture();
     [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
 }

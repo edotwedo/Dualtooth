@@ -9,13 +9,15 @@ abstract class SkinControl : Control
     protected SkinControl()
     {
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint |
-                 ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+                 ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw |
+                 ControlStyles.SupportsTransparentBackColor, true);
+        BackColor = Color.Transparent;
     }
 
     protected int S(float value) => (int)Math.Round(value * Skin.Scale(this));
 }
 
-/// <summary>A chunky beveled button.</summary>
+/// <summary>A rounded, softly lit button.</summary>
 sealed class SkinButton : SkinControl
 {
     bool hover, pressed;
@@ -38,60 +40,75 @@ sealed class SkinButton : SkinControl
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
-        var r = ClientRectangle;
-        var top = pressed ? Skin.BodyDark : hover && Enabled ? ControlPaint.Light(Skin.Body, 0.35f) : ControlPaint.Light(Skin.Body, 0.15f);
-        var bottom = pressed ? Skin.Body : Skin.BodyDark;
-        using (var brush = new LinearGradientBrush(r, top, bottom, LinearGradientMode.Vertical))
-            g.FillRectangle(brush, r);
-        Skin.Bevel(g, r, raised: !pressed, width: Math.Max(1, S(1)));
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        var r = new RectangleF(0.5f, 0.5f, Width - 1.5f, Height - 1.5f);
+        var radius = Math.Min(S(5), Height / 2f);
 
-        var textColor = !Enabled ? Skin.BodyLight : Accent ? Skin.Cyan : Color.FromArgb(0xE0, 0xE4, 0xF4);
-        var textRect = pressed ? new Rectangle(r.X + 1, r.Y + 1, r.Width, r.Height) : r;
-        const TextFormatFlags flags = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine;
-        TextRenderer.DrawText(g, Text, Font, new Rectangle(textRect.X + 1, textRect.Y + 1, textRect.Width, textRect.Height), Skin.BodyDark, flags);
-        TextRenderer.DrawText(g, Text, Font, textRect, textColor, flags);
+        var lift = !Enabled ? 0.05f : pressed ? 0f : hover ? 0.3f : 0.15f;
+        var top = ControlPaint.Light(Skin.Body, lift);
+        var bottom = pressed ? Skin.Body : Skin.BodyDark;
+        using (var path = Skin.RoundRect(r, radius))
+        using (var brush = new LinearGradientBrush(r, top, bottom, LinearGradientMode.Vertical))
+        using (var edge = new Pen(Accent && Enabled ? Color.FromArgb(hover ? 200 : 120, Skin.Accent) : Skin.BodyDark))
+        {
+            g.FillPath(brush, path);
+            g.DrawPath(edge, path);
+        }
+        if (!pressed)
+            using (var shine = new Pen(Color.FromArgb(40, Color.White)))
+                g.DrawLine(shine, r.Left + radius, r.Top + 1, r.Right - radius, r.Top + 1);
+
+        var textColor = !Enabled ? Skin.BodyLight : Accent ? Skin.Accent : Color.FromArgb(0xE4, 0xE1, 0xF7);
+        var textRect = Rectangle.Round(r);
+        if (pressed) textRect.Offset(0, 1);
+        TextRenderer.DrawText(g, Text, Font, textRect, textColor,
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine);
     }
 }
 
-/// <summary>The main LCD: a scrolling marquee, two status lines and a bouncing spectrum analyzer.</summary>
+/// <summary>The main screen: a scrolling marquee, two status lines, and a WIN ⇄ LNX signal wave.</summary>
 sealed class LcdDisplay : SkinControl
 {
-    const int BarCount = 18;
     readonly System.Windows.Forms.Timer timer = new() { Interval = 33 };
-    readonly float[] bars = new float[BarCount];
-    readonly float[] targets = new float[BarCount];
-    readonly float[] peaks = new float[BarCount];
+    readonly List<(float Position, int Direction)> pulses = [];
     readonly Random random = new();
-    float scroll;
+    float scroll, phase;
     int partyFrames;
 
     public string Marquee { get; set; } = "";
     public string Line1 { get; set; } = "";
     public string Line2 { get; set; } = "";
-    public Color Line2Color { get; set; } = Skin.Green;
+    public Color Line2Color { get; set; } = Skin.Glow;
 
     public LcdDisplay()
     {
+        BackColor = Skin.Lcd;
         timer.Tick += (_, _) => Animate();
         timer.Start();
     }
 
-    /// <summary>Makes the spectrum analyzer go wild for a couple of seconds.</summary>
-    public void Party() => partyFrames = 75;
+    /// <summary>Sends a burst of pulses back and forth for a couple of seconds.</summary>
+    public void Party() => partyFrames = 90;
 
     void Animate()
     {
         scroll += 1.3f * Skin.Scale(this);
-        for (var i = 0; i < BarCount; i++)
+        phase += partyFrames > 0 ? 0.16f : 0.06f;
+
+        if (random.NextDouble() < (partyFrames > 0 ? 0.3 : 0.035))
         {
-            if (random.NextDouble() < (partyFrames > 0 ? 0.5 : 0.15))
-            {
-                var r = random.NextSingle();
-                targets[i] = partyFrames > 0 ? 0.55f + 0.45f * r : 0.12f + 0.6f * r * r;
-            }
-            bars[i] += (targets[i] - bars[i]) * 0.35f;
-            peaks[i] = Math.Max(peaks[i] - 0.012f, bars[i]);
+            var direction = random.Next(2) == 0 ? 1 : -1;
+            pulses.Add((direction == 1 ? 0f : 1f, direction));
         }
+        var speed = partyFrames > 0 ? 0.028f : 0.013f;
+        for (var i = pulses.Count - 1; i >= 0; i--)
+        {
+            var (position, direction) = pulses[i];
+            position += direction * speed;
+            if (position is < 0 or > 1) pulses.RemoveAt(i);
+            else pulses[i] = (position, direction);
+        }
+
         if (partyFrames > 0) partyFrames--;
         Invalidate();
     }
@@ -100,10 +117,10 @@ sealed class LcdDisplay : SkinControl
     {
         var g = e.Graphics;
         g.Clear(Skin.Lcd);
-        int pad = S(6), spectrumWidth = S(118);
+        int pad = S(7), waveWidth = S(150);
 
         // Marquee
-        var marqueeRect = new Rectangle(pad, pad, Width - spectrumWidth - 3 * pad, Skin.LcdLarge.Height + S(2));
+        var marqueeRect = new Rectangle(pad, pad, Width - waveWidth - 3 * pad, Skin.LcdLarge.Height + S(2));
         if (Marquee.Length > 0)
         {
             var textWidth = TextRenderer.MeasureText(g, Marquee, Skin.LcdLarge, Size.Empty, TextFormatFlags.NoPadding).Width;
@@ -111,42 +128,67 @@ sealed class LcdDisplay : SkinControl
             g.SetClip(marqueeRect);
             for (var copy = x; copy < marqueeRect.Right; copy += textWidth)
             {
-                TextRenderer.DrawText(g, Marquee, Skin.LcdLarge, new Point(copy + 1, marqueeRect.Y + 1), Skin.GreenGlow, TextFormatFlags.NoPadding);
-                TextRenderer.DrawText(g, Marquee, Skin.LcdLarge, new Point(copy, marqueeRect.Y), Skin.Green, TextFormatFlags.NoPadding);
+                TextRenderer.DrawText(g, Marquee, Skin.LcdLarge, new Point(copy + 1, marqueeRect.Y + 1), Skin.GlowShadow, TextFormatFlags.NoPadding);
+                TextRenderer.DrawText(g, Marquee, Skin.LcdLarge, new Point(copy, marqueeRect.Y), Skin.Glow, TextFormatFlags.NoPadding);
             }
             g.ResetClip();
         }
 
         // Status lines
         var lineY = marqueeRect.Bottom + S(10);
-        var lineWidth = marqueeRect.Width;
         const TextFormatFlags lineFlags = TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine;
-        TextRenderer.DrawText(g, Line1, Skin.LcdSmall, new Rectangle(pad, lineY, lineWidth, Skin.LcdSmall.Height), Skin.Green, lineFlags);
-        TextRenderer.DrawText(g, Line2, Skin.LcdSmall, new Rectangle(pad, lineY + Skin.LcdSmall.Height + S(4), lineWidth, Skin.LcdSmall.Height), Line2Color, lineFlags);
+        TextRenderer.DrawText(g, Line1, Skin.LcdSmall, new Rectangle(pad, lineY, marqueeRect.Width, Skin.LcdSmall.Height), Skin.Glow, lineFlags);
+        TextRenderer.DrawText(g, Line2, Skin.LcdSmall, new Rectangle(pad, lineY + Skin.LcdSmall.Height + S(4), marqueeRect.Width, Skin.LcdSmall.Height), Line2Color, lineFlags);
 
-        // Spectrum analyzer
-        int gap = Math.Max(1, S(2)), segment = Math.Max(2, S(2)), segmentGap = Math.Max(1, S(1));
-        var area = new Rectangle(Width - spectrumWidth - pad, pad, spectrumWidth, Height - 2 * pad);
-        var barWidth = (area.Width - (BarCount - 1) * gap) / BarCount;
-        var segments = area.Height / (segment + segmentGap);
-        using var green = new SolidBrush(Skin.Green);
-        using var yellow = new SolidBrush(Skin.Yellow);
-        using var red = new SolidBrush(Skin.Red);
-        using var peak = new SolidBrush(Color.FromArgb(0xC8, 0xD0, 0xE8));
-        for (var i = 0; i < BarCount; i++)
+        DrawSignalWave(g, new Rectangle(Width - waveWidth - pad, pad, waveWidth, Height - 2 * pad));
+        Skin.Scanlines(g, ClientRectangle);
+    }
+
+    void DrawSignalWave(Graphics g, Rectangle area)
+    {
+        const TextFormatFlags flags = TextFormatFlags.NoPadding | TextFormatFlags.SingleLine;
+        var labelSize = TextRenderer.MeasureText(g, "LNX", Skin.LcdSmall, Size.Empty, flags);
+        var labelY = area.Y + (area.Height - labelSize.Height) / 2;
+        TextRenderer.DrawText(g, "WIN", Skin.LcdSmall, new Point(area.X, labelY), Skin.Glow, flags);
+        TextRenderer.DrawText(g, "LNX", Skin.LcdSmall, new Point(area.Right - labelSize.Width, labelY), Skin.Glow, flags);
+
+        float x0 = area.X + labelSize.Width + S(6), x1 = area.Right - labelSize.Width - S(6);
+        float midY = area.Y + area.Height / 2f, amplitude = area.Height * 0.28f;
+        PointF At(float t) => new(
+            x0 + t * (x1 - x0),
+            midY + amplitude * MathF.Sin(t * MathF.PI * 3 + phase) * MathF.Sin(t * MathF.PI));
+
+        // The wave itself, as a dotted line
+        using (var dot = new SolidBrush(Skin.GlowDim))
         {
-            var x = area.X + i * (barWidth + gap);
-            var lit = (int)(bars[i] * segments);
-            for (var k = 0; k < lit; k++)
+            var step = Math.Max(3, S(4));
+            for (var x = x0; x <= x1; x += step)
             {
-                var brush = k > segments * 0.8 ? red : k > segments * 0.55 ? yellow : green;
-                g.FillRectangle(brush, x, area.Bottom - (k + 1) * (segment + segmentGap), barWidth, segment);
+                var p = At((x - x0) / (x1 - x0));
+                g.FillRectangle(dot, p.X, p.Y, Math.Max(1, S(2)), Math.Max(1, S(2)));
             }
-            var peakRow = Math.Min(segments - 1, (int)(peaks[i] * segments));
-            g.FillRectangle(peak, x, area.Bottom - (peakRow + 1) * (segment + segmentGap), barWidth, segment);
         }
 
-        Skin.Scanlines(g, ClientRectangle);
+        // Pulses travelling between the two systems, with a short trail
+        var mode = g.SmoothingMode;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        using var halo = new SolidBrush(Color.FromArgb(60, Skin.Glow));
+        using var core = new SolidBrush(Skin.Glow);
+        using var trail = new SolidBrush(Color.FromArgb(110, Skin.Glow));
+        float big = S(6), small = S(2.5f);
+        foreach (var (position, direction) in pulses)
+        {
+            for (var k = 1; k <= 3; k++)
+            {
+                var tp = At(Math.Clamp(position - direction * 0.03f * k, 0, 1));
+                var size = small * (1 - k * 0.2f);
+                g.FillEllipse(trail, tp.X - size / 2, tp.Y - size / 2, size, size);
+            }
+            var p = At(position);
+            g.FillEllipse(halo, p.X - big / 2, p.Y - big / 2, big, big);
+            g.FillEllipse(core, p.X - small / 2, p.Y - small / 2, small, small);
+        }
+        g.SmoothingMode = mode;
     }
 
     protected override void Dispose(bool disposing)
@@ -156,13 +198,17 @@ sealed class LcdDisplay : SkinControl
     }
 }
 
-/// <summary>A static LCD panel for messages and instructions.</summary>
+/// <summary>A static screen for messages and instructions.</summary>
 sealed class LcdReadout : SkinControl
 {
-    public Color TextColor { get; set; } = Skin.Green;
+    public Color TextColor { get; set; } = Skin.Glow;
     public bool PathMode { get; set; }
 
-    public LcdReadout() => Font = Skin.LcdSmall;
+    public LcdReadout()
+    {
+        BackColor = Skin.Lcd;
+        Font = Skin.LcdSmall;
+    }
 
     protected override void OnTextChanged(EventArgs e) { Invalidate(); base.OnTextChanged(e); }
 
@@ -170,7 +216,7 @@ sealed class LcdReadout : SkinControl
     {
         var g = e.Graphics;
         g.Clear(Skin.Lcd);
-        var r = Rectangle.Inflate(ClientRectangle, -S(6), -S(4));
+        var r = Rectangle.Inflate(ClientRectangle, -S(7), -S(5));
         var flags = PathMode
             ? TextFormatFlags.SingleLine | TextFormatFlags.PathEllipsis | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding
             : TextFormatFlags.WordBreak | TextFormatFlags.NoPadding;
@@ -179,7 +225,7 @@ sealed class LcdReadout : SkinControl
     }
 }
 
-/// <summary>The device list, drawn like a music player's playlist. Click a row to switch it on or off.</summary>
+/// <summary>The device list. Each row has an LED that lights up when the device will be synced; click a row to toggle it.</summary>
 sealed class DevicePlaylist : SkinControl
 {
     sealed class Row(PairedDevice device) { public PairedDevice Device = device; public bool On = device.Name is not null; }
@@ -196,12 +242,13 @@ sealed class DevicePlaylist : SkinControl
 
     public DevicePlaylist()
     {
+        BackColor = Skin.Lcd;
         Font = Skin.LcdSmall;
         SetStyle(ControlStyles.Selectable, true);
         TabStop = true;
     }
 
-    int RowHeight => Font.Height + S(5);
+    int RowHeight => Font.Height + S(7);
     int VisibleRows => Math.Max(1, Height / RowHeight);
 
     public void SetDevices(IEnumerable<PairedDevice> devices)
@@ -268,16 +315,16 @@ sealed class DevicePlaylist : SkinControl
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
-        g.Clear(Color.Black);
+        g.Clear(Skin.Lcd);
 
         if (rows.Count == 0)
         {
-            TextRenderer.DrawText(g, EmptyText, Font, ClientRectangle, Skin.GreenDim,
+            TextRenderer.DrawText(g, EmptyText, Font, ClientRectangle, Skin.GlowDim,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
             return;
         }
 
-        int pad = S(6), box = S(8), rowHeight = RowHeight;
+        int pad = S(9), led = S(8), rowHeight = RowHeight;
         var scrollbar = rows.Count > VisibleRows ? S(5) : 0;
         const TextFormatFlags flags = TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.VerticalCenter;
 
@@ -285,34 +332,49 @@ sealed class DevicePlaylist : SkinControl
         {
             var row = rows[i];
             var rect = new Rectangle(0, (i - top) * rowHeight, Width - scrollbar, rowHeight);
-            if (i == current && Focused)
+            var selected = i == current && Focused;
+            if (selected)
                 using (var sel = new SolidBrush(Skin.Selection)) g.FillRectangle(sel, rect);
 
-            var color = row.On ? Skin.Green : Skin.GreenDim;
-            var textColor = i == current && Focused ? Color.White : color;
+            // LED
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            var ledRect = new RectangleF(pad, rect.Y + (rowHeight - led) / 2f, led, led);
+            if (row.On)
+            {
+                using var halo = new SolidBrush(Color.FromArgb(55, Skin.Glow));
+                using var lit = new SolidBrush(Skin.Glow);
+                g.FillEllipse(halo, RectangleF.Inflate(ledRect, S(3), S(3)));
+                g.FillEllipse(lit, ledRect);
+            }
+            else
+            {
+                using var off = new Pen(Skin.GlowDim, Math.Max(1, S(1)));
+                g.DrawEllipse(off, ledRect);
+            }
+            g.SmoothingMode = SmoothingMode.None;
 
-            // Checkbox
-            var boxRect = new Rectangle(pad, rect.Y + (rowHeight - box) / 2, box, box);
-            using (var pen = new Pen(color)) g.DrawRectangle(pen, boxRect);
-            if (row.On) using (var fill = new SolidBrush(color)) g.FillRectangle(fill, Rectangle.Inflate(boxRect, -S(2), -S(2)));
+            var nameColor = selected ? Color.White : row.On ? Skin.Glow : Skin.GlowDim;
+            var kind = row.Device.Kind.ToUpperInvariant();
+            var transport = row.Device.TransportLabel.ToUpperInvariant();
+            var transportWidth = TextRenderer.MeasureText(g, transport, Font, Size.Empty, flags).Width;
+            var kindWidth = TextRenderer.MeasureText(g, kind, Font, Size.Empty, flags).Width;
+            var transportRect = new Rectangle(rect.Right - transportWidth - pad, rect.Y, transportWidth, rowHeight);
+            var kindRect = new Rectangle(transportRect.Left - kindWidth - S(12), rect.Y, kindWidth, rowHeight);
+            var nameLeft = (int)ledRect.Right + pad;
+            var nameRect = new Rectangle(nameLeft, rect.Y, kindRect.Left - nameLeft - pad, rowHeight);
 
-            // "3. Logi K250 ........ KEYBOARD  LE", like track name and length
-            var right = $"{row.Device.Kind.ToUpperInvariant()}  {row.Device.TransportLabel.ToUpperInvariant()}";
-            var rightWidth = TextRenderer.MeasureText(g, right, Font, Size.Empty, flags).Width;
-            var rightRect = new Rectangle(rect.Right - rightWidth - pad, rect.Y, rightWidth, rowHeight);
-            var nameLeft = boxRect.Right + pad;
-            var nameRect = new Rectangle(nameLeft, rect.Y, rightRect.Left - nameLeft - pad, rowHeight);
-            TextRenderer.DrawText(g, $"{i + 1}. {row.Device.Name ?? "Unknown device"}", Font, nameRect, textColor, flags | TextFormatFlags.EndEllipsis);
-            TextRenderer.DrawText(g, right, Font, rightRect, textColor, flags);
+            TextRenderer.DrawText(g, row.Device.Name ?? "Unknown device", Font, nameRect, nameColor, flags | TextFormatFlags.EndEllipsis);
+            TextRenderer.DrawText(g, kind, Font, kindRect, row.On ? Skin.Accent : Skin.GlowDim, flags);
+            TextRenderer.DrawText(g, transport, Font, transportRect, Skin.GlowDim, flags);
         }
 
         if (scrollbar > 0)
         {
             var track = new Rectangle(Width - scrollbar, 0, scrollbar, Height);
-            using (var trackBrush = new SolidBrush(Skin.GreenGlow)) g.FillRectangle(trackBrush, track);
+            using (var trackBrush = new SolidBrush(Skin.GlowShadow)) g.FillRectangle(trackBrush, track);
             var thumbHeight = Math.Max(S(12), Height * VisibleRows / rows.Count);
             var thumbY = (Height - thumbHeight) * top / Math.Max(1, rows.Count - VisibleRows);
-            using var thumb = new SolidBrush(Skin.GreenDim);
+            using var thumb = new SolidBrush(Skin.GlowDim);
             g.FillRectangle(thumb, track.X + 1, thumbY, track.Width - 2, thumbHeight);
         }
     }
