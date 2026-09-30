@@ -19,7 +19,6 @@ the other one doesn't. Dualtooth copies Windows' keys into Linux so both use the
    ```
    sudo bash dualtooth-apply.sh
    ```
-   Add `--dry-run` to see what it would change without changing anything.
 5. Turn each device off and on. Done.
 
 **Afterwards:** delete the script, since it contains pairing keys. Don't pair these devices again in

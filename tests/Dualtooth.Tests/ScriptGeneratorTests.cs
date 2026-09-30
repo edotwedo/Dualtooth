@@ -20,7 +20,7 @@ public class ScriptGeneratorTests
         Assert.StartsWith("#!/bin/bash\n", script);
         Assert.Contains("ADAPTER=\"50:EE:32:9C:D5:1A\"", script);
         Assert.Contains("write_device C0:E1:5A:8F:83:AC 'Logi K250' <<'DUALTOOTH_INFO_EOF'\n[General]\n", script);
-        Assert.Contains("--dry-run", script);
+        Assert.Contains("systemctl start bluetooth", script);
     }
 
     [Fact]

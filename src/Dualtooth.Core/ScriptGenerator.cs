@@ -19,19 +19,16 @@ public static class ScriptGenerator
             # Installs this PC's Windows Bluetooth pairings into Linux (BlueZ), so these devices
             # work in both operating systems without pairing again.
             #
-            # Usage:   sudo bash dualtooth-apply.sh            apply the changes
-            #          sudo bash dualtooth-apply.sh --dry-run  show what would change, change nothing
+            # Usage:   sudo bash dualtooth-apply.sh
             #
             # This file contains Bluetooth pairing keys. Delete it once you're done.
             set -euo pipefail
 
             ADAPTER="{{adapter}}"
             BTDIR="/var/lib/bluetooth/$ADAPTER"
-            DRY_RUN=0
-            [ "${1:-}" = "--dry-run" ] && DRY_RUN=1
 
             if [ "$(id -u)" -ne 0 ]; then
-              echo "Please run with sudo:  sudo bash $0 $*"; exit 1
+              echo "Please run with sudo:  sudo bash $0"; exit 1
             fi
 
             if [ ! -d "$BTDIR" ]; then
@@ -42,22 +39,15 @@ public static class ScriptGenerator
             fi
 
             write_device() {  # $1 = device address, $2 = display name; info file contents on stdin
-              local file="$BTDIR/$1/info" content
-              content="$(cat)"
-              if [ "$DRY_RUN" = 1 ]; then
-                if [ -f "$file" ]; then echo "Would replace $file  ($2)"; else echo "Would create  $file  ($2)"; fi
-                return
-              fi
+              local file="$BTDIR/$1/info"
               mkdir -p "$BTDIR/$1"
-              [ -f "$file" ] && cp "$file" "$file.bak"
-              printf '%s\n' "$content" > "$file"
+              if [ -f "$file" ]; then cp "$file" "$file.bak"; fi
+              cat > "$file"
               chmod 600 "$file"
               echo "Installed $2 ($1)"
             }
 
-            if [ "$DRY_RUN" = 0 ]; then
-              systemctl stop bluetooth 2>/dev/null || service bluetooth stop 2>/dev/null || true
-            fi
+            systemctl stop bluetooth 2>/dev/null || service bluetooth stop 2>/dev/null || true
 
 
             """.Replace("\r\n", "\n"));
@@ -71,10 +61,6 @@ public static class ScriptGenerator
         }
 
         sb.Append("""
-            if [ "$DRY_RUN" = 1 ]; then
-              echo; echo "Dry run finished. Nothing was changed."; exit 0
-            fi
-
             # Power the adapter on at boot so Bluetooth keyboards work at the login screen.
             if [ -f /etc/bluetooth/main.conf ]; then
               if grep -qE '^#?\s*AutoEnable' /etc/bluetooth/main.conf; then

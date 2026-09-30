@@ -1,93 +1,111 @@
 using System.Diagnostics;
+using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
 using System.Text;
 using Dualtooth.Core;
 
 namespace Dualtooth;
 
+/// <summary>The one and only Dualtooth window, skinned in the spirit of late-90s media players.</summary>
 sealed class MainForm : Form
 {
-    readonly ComboBox adapterBox = new() { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill };
-    readonly ListView deviceList = new()
-    {
-        View = View.Details, CheckBoxes = true, FullRowSelect = true, Dock = DockStyle.Fill,
-        HeaderStyle = ColumnHeaderStyle.Nonclickable,
-    };
-    readonly TextBox pathBox = new() { Dock = DockStyle.Fill };
-    readonly Button browseButton = new() { Text = "Browse…", AutoSize = true };
-    readonly Button generateButton = new() { Text = "Generate Linux script", AutoSize = true, Padding = new Padding(12, 4, 12, 4), Enabled = false };
-    readonly Label statusLabel = new() { AutoSize = true, Dock = DockStyle.Fill, Text = "Reading Bluetooth pairings…" };
-    readonly LinkLabel showFileLink = new() { Text = "Show the script in its folder", AutoSize = true, Visible = false };
+    const string Tagline = "DUALTOOTH v0.1  ***  ONE KEYBOARD, TWO OPERATING SYSTEMS  ***  IT REALLY PAIRS THE PENGUIN'S ASS  ***  ";
+    const int TitleBarHeight = 20;
 
+    readonly LcdDisplay lcd = new();
+    readonly DevicePlaylist playlist = new() { EmptyText = "READING PAIRINGS..." };
+    readonly SkinButton allButton = new() { Text = "ALL" };
+    readonly SkinButton noneButton = new() { Text = "NONE" };
+    readonly SkinButton adapterButton = new() { Text = "ADAPTER ▸", Visible = false };
+    readonly LcdReadout pathReadout = new() { PathMode = true, Cursor = Cursors.Hand };
+    readonly SkinButton ejectButton = new() { Text = "⏏", Font = new Font("Segoe UI Symbol", 10f, FontStyle.Bold) };
+    readonly SkinButton syncButton = new() { Text = "▶   SYNC TO LINUX", Accent = true, Font = Skin.ButtonLarge, Enabled = false };
+    readonly LcdReadout readout = new() { Text = "WARMING UP THE TUBES..." };
+    readonly SkinButton showFileButton = new() { Text = "SHOW FILE", Enabled = false };
+    readonly SkinButton minimizeButton = new() { Text = "_" };
+    readonly SkinButton closeButton = new() { Text = "×" };
+
+    readonly float scale;
+    readonly bool demo;
     List<AdapterKeys> adapters = [];
+    int adapterIndex;
     BtAddress? currentAdapter;
+    string savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "dualtooth-apply.sh");
 
-    public MainForm()
+    int S(float value) => (int)Math.Round(value * scale);
+
+    /// <param name="demo">Show made-up devices instead of reading real pairings (for screenshots).</param>
+    public MainForm(bool demo = false)
     {
+        this.demo = demo;
+        scale = DeviceDpi / 96f;
         Text = "Dualtooth";
-        Font = new Font("Segoe UI", 10f);
-        ClientSize = new Size(700, 560);
-        MinimumSize = new Size(560, 460);
+        FormBorderStyle = FormBorderStyle.None;
+        AutoScaleMode = AutoScaleMode.None;
+        BackColor = Skin.Body;
+        DoubleBuffered = true;
         StartPosition = FormStartPosition.CenterScreen;
+        ClientSize = new Size(S(470), S(604));
 
-        deviceList.Columns.Add("Device", 230);
-        deviceList.Columns.Add("Type", 90);
-        deviceList.Columns.Add("Connection", 110);
-        deviceList.Columns.Add("Address", 150);
+        Place(minimizeButton, 438, 5, 12, 11);
+        Place(closeButton, 452, 5, 12, 11);
+        Place(lcd, 12, 30, 446, 96);
+        Place(allButton, 300, 134, 44, 17);
+        Place(noneButton, 348, 134, 44, 17);
+        Place(adapterButton, 208, 134, 88, 17);
+        Place(playlist, 12, 158, 446, 244);
+        Place(pathReadout, 12, 428, 404, 24);
+        Place(ejectButton, 422, 428, 36, 24);
+        Place(syncButton, 12, 462, 446, 42);
+        Place(readout, 12, 514, 446, 58);
+        Place(showFileButton, 378, 580, 80, 17);
 
-        pathBox.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "dualtooth-apply.sh");
-
-        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(16), ColumnCount = 3 };
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-
-        var title = new Label { Text = "Dualtooth", AutoSize = true, Font = new Font("Segoe UI Semibold", 18f) };
-        var subtitle = new Label
-        {
-            AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(3, 0, 3, 12),
-            Text = "Use the same Bluetooth devices in Windows and Linux without pairing them twice.",
-        };
-        layout.Controls.Add(title, 0, 0); layout.SetColumnSpan(title, 3);
-        layout.Controls.Add(subtitle, 0, 1); layout.SetColumnSpan(subtitle, 3);
-
-        layout.Controls.Add(new Label { Text = "Bluetooth adapter:", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 2);
-        layout.Controls.Add(adapterBox, 1, 2); layout.SetColumnSpan(adapterBox, 2);
-
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        layout.Controls.Add(deviceList, 0, 3); layout.SetColumnSpan(deviceList, 3);
-
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.Controls.Add(new Label { Text = "Save script to:", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 4);
-        layout.Controls.Add(pathBox, 1, 4);
-        layout.Controls.Add(browseButton, 2, 4);
-
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.Controls.Add(generateButton, 0, 5); layout.SetColumnSpan(generateButton, 3);
-        generateButton.Anchor = AnchorStyles.None;
-        generateButton.Margin = new Padding(3, 12, 3, 12);
-
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.Controls.Add(statusLabel, 0, 6); layout.SetColumnSpan(statusLabel, 3);
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.Controls.Add(showFileLink, 0, 7); layout.SetColumnSpan(showFileLink, 3);
-
-        Controls.Add(layout);
-
-        adapterBox.SelectedIndexChanged += (_, _) => ShowDevices();
-        deviceList.ItemChecked += (_, _) => generateButton.Enabled = deviceList.CheckedItems.Count > 0;
-        browseButton.Click += (_, _) => BrowseForPath();
-        generateButton.Click += (_, _) => GenerateScript();
-        showFileLink.LinkClicked += (_, _) => Process.Start("explorer.exe", $"/select,\"{pathBox.Text}\"");
+        minimizeButton.Click += (_, _) => WindowState = FormWindowState.Minimized;
+        closeButton.Click += (_, _) => Close();
+        allButton.Click += (_, _) => playlist.SetAll(true);
+        noneButton.Click += (_, _) => playlist.SetAll(false);
+        adapterButton.Click += (_, _) => { adapterIndex = (adapterIndex + 1) % adapters.Count; ShowAdapter(); };
+        playlist.SelectionChanged += (_, _) => UpdateCounts();
+        ejectButton.Click += (_, _) => BrowseForPath();
+        pathReadout.Click += (_, _) => BrowseForPath();
+        syncButton.Click += (_, _) => Sync();
+        showFileButton.Click += (_, _) => Process.Start("explorer.exe", $"/select,\"{savePath}\"");
         Load += async (_, _) => await LoadPairingsAsync();
-        Resize += (_, _) => statusLabel.MaximumSize = new Size(ClientSize.Width - 40, 0);
-        statusLabel.MaximumSize = new Size(ClientSize.Width - 40, 0);
+
+        lcd.Marquee = Tagline;
+        lcd.Line1 = "READING BLUETOOTH PAIRINGS...";
+        pathReadout.Text = savePath;
+    }
+
+    void Place(Control control, int x, int y, int width, int height)
+    {
+        control.Bounds = new Rectangle(S(x), S(y), S(width), S(height));
+        Controls.Add(control);
+    }
+
+    // Borderless, but still minimizable from the taskbar.
+    protected override CreateParams CreateParams
+    {
+        get
+        {
+            const int WsMinimizeBox = 0x20000, WsSysMenu = 0x80000;
+            var cp = base.CreateParams;
+            cp.Style |= WsMinimizeBox | WsSysMenu;
+            return cp;
+        }
     }
 
     async Task LoadPairingsAsync()
     {
+        if (demo)
+        {
+            adapters = [DemoAdapter()];
+            currentAdapter = adapters[0].Address;
+            ShowAdapter();
+            readout.Text = "DEMO MODE: THESE DEVICES ARE MADE UP.";
+            return;
+        }
+
         try
         {
             adapters = await Task.Run(KeyReader.ReadAll);
@@ -97,79 +115,175 @@ sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            statusLabel.Text = "Couldn't read Bluetooth pairings: " + ex.Message;
+            ShowError("COULDN'T READ BLUETOOTH PAIRINGS", ex.Message);
+            playlist.EmptyText = "NO SIGNAL";
+            playlist.Invalidate();
             return;
         }
 
         if (adapters.Count == 0)
         {
-            statusLabel.Text = "No Bluetooth pairings found on this PC. Pair your devices in Windows first.";
+            lcd.Line1 = "NO PAIRINGS FOUND";
+            playlist.EmptyText = "NOTHING PAIRED YET.\nPAIR YOUR DEVICES IN WINDOWS, THEN REOPEN DUALTOOTH.";
+            playlist.Invalidate();
+            readout.Text = "PAIR YOUR DEVICES IN WINDOWS FIRST, THEN COME BACK.";
             return;
         }
 
-        // List the adapter this PC is using first.
+        // Start on the adapter this PC is actually using.
         adapters = adapters.OrderByDescending(a => a.Address == currentAdapter).ToList();
-        foreach (var adapter in adapters)
-            adapterBox.Items.Add(adapter.Address == currentAdapter
-                ? $"{adapter.Address}  (this PC's Bluetooth)"
-                : $"{adapter.Address}  (not currently connected)");
-        adapterBox.SelectedIndex = 0;
-
-        statusLabel.Text = "Tick the devices you want to use in Linux, then click Generate.";
+        adapterIndex = 0;
+        adapterButton.Visible = adapters.Count > 1;
+        ShowAdapter();
+        readout.Text = "CLICK A DEVICE TO SWITCH IT ON OR OFF, THEN HIT SYNC.";
     }
 
-    void ShowDevices()
+    static AdapterKeys DemoAdapter()
     {
-        deviceList.BeginUpdate();
-        deviceList.Items.Clear();
-        foreach (var device in adapters[adapterBox.SelectedIndex].Devices)
-        {
-            var item = new ListViewItem(device.Name ?? "Unknown device") { Tag = device, Checked = device.Name is not null };
-            item.SubItems.Add(device.Kind);
-            item.SubItems.Add(device.TransportLabel);
-            item.SubItems.Add(device.Address.ToString());
-            deviceList.Items.Add(item);
-        }
-        deviceList.EndUpdate();
-        generateButton.Enabled = deviceList.CheckedItems.Count > 0;
+        var key = new byte[16];
+        PairedDevice Le(ulong address, string name, string kind) =>
+            new(new BtAddress(address)) { Name = name, Kind = kind, Le = new LeKeys(key, 0, 0, 16, 1) };
+        PairedDevice Classic(ulong address, string name, string kind) =>
+            new(new BtAddress(address)) { Name = name, Kind = kind, LinkKey = key };
+
+        return new AdapterKeys(new BtAddress(0x001A7DDA7101), [
+            Le(0xC00000000001, "Clicky Keyboard 3000", "keyboard"),
+            Le(0xC00000000002, "Glide Mouse", "mouse"),
+            Classic(0x000000000003, "Bass Cannon Headphones", "audio"),
+            Le(0xC00000000004, "Wireless Controller", "gamepad"),
+            new PairedDevice(new BtAddress(0x000000000005)) { Name = "Pocket Phone", Kind = "phone", LinkKey = key, Le = new LeKeys(key, 0, 0, 16, 0) },
+            Le(0xC00000000006, null!, "other"),
+        ]);
+    }
+
+    void ShowAdapter()
+    {
+        var adapter = adapters[adapterIndex];
+        lcd.Line1 = adapter.Address == currentAdapter
+            ? $"ADAPTER {adapter.Address}  [ACTIVE]"
+            : $"ADAPTER {adapter.Address}  [NOT CONNECTED]";
+        playlist.EmptyText = "NO DEVICES ON THIS ADAPTER";
+        playlist.SetDevices(adapter.Devices);
+        playlist.Focus();
+    }
+
+    void UpdateCounts()
+    {
+        lcd.Line2Color = Skin.Green;
+        lcd.Line2 = $"{playlist.OnCount} OF {playlist.Count} DEVICES READY TO SYNC";
+        syncButton.Enabled = playlist.OnCount > 0;
     }
 
     void BrowseForPath()
     {
         using var dialog = new SaveFileDialog
         {
-            FileName = Path.GetFileName(pathBox.Text),
-            InitialDirectory = Path.GetDirectoryName(pathBox.Text),
+            FileName = Path.GetFileName(savePath),
+            InitialDirectory = Path.GetDirectoryName(savePath),
             Filter = "Shell script (*.sh)|*.sh|All files (*.*)|*.*",
         };
-        if (dialog.ShowDialog(this) == DialogResult.OK) pathBox.Text = dialog.FileName;
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        savePath = dialog.FileName;
+        pathReadout.Text = savePath;
     }
 
-    void GenerateScript()
+    void Sync()
     {
-        var adapter = adapters[adapterBox.SelectedIndex];
-        var selected = deviceList.CheckedItems.Cast<ListViewItem>().Select(i => (PairedDevice)i.Tag!).ToList();
+        var adapter = adapters[adapterIndex];
+        var selected = playlist.SelectedDevices.ToList();
 
         try
         {
             var script = ScriptGenerator.Generate(adapter.Address, selected, DateTime.Now);
-            File.WriteAllText(pathBox.Text, script, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            File.WriteAllText(savePath, script, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
         catch (Exception ex)
         {
-            statusLabel.Text = "Couldn't save the script: " + ex.Message;
-            showFileLink.Visible = false;
+            ShowError("COULDN'T SAVE THE SCRIPT", ex.Message);
             return;
         }
 
-        var fileName = Path.GetFileName(pathBox.Text);
-        statusLabel.Text =
-            $"Saved {selected.Count} device(s) to {fileName}.\n\n" +
-            "Next: boot Linux, open the folder that has the script in a terminal, and run:\n" +
-            $"    sudo bash {fileName}\n" +
-            $"(Add --dry-run to preview without changing anything.)\n\n" +
-            "The script contains pairing keys, so delete it once it has worked. " +
-            "Don't pair these devices again in either OS, or they'll need syncing again.";
-        showFileLink.Visible = true;
+        var fileName = Path.GetFileName(savePath);
+        lcd.Party();
+        lcd.Line2Color = Skin.Cyan;
+        lcd.Line2 = $"SYNCED {selected.Count} DEVICE{(selected.Count == 1 ? "" : "S")}!";
+        readout.TextColor = Skin.Green;
+        readout.Text =
+            $"NEXT: BOOT LINUX, OPEN A TERMINAL WHERE {fileName} IS SAVED, AND RUN:\n" +
+            $"   sudo bash {fileName}\n" +
+            "THEN DELETE THE SCRIPT. IT HOLDS YOUR PAIRING KEYS.";
+        showFileButton.Enabled = true;
     }
+
+    void ShowError(string headline, string detail)
+    {
+        lcd.Line2Color = Skin.Red;
+        lcd.Line2 = headline;
+        readout.TextColor = Skin.Red;
+        readout.Text = detail;
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        var g = e.Graphics;
+        var outer = ClientRectangle;
+
+        // Body: subtle vertical sheen
+        using (var body = new LinearGradientBrush(outer, ControlPaint.Light(Skin.Body, 0.12f), Skin.Body, LinearGradientMode.Vertical))
+            g.FillRectangle(body, outer);
+        Skin.Bevel(g, outer, raised: true, width: S(2));
+
+        DrawTitleBar(g);
+
+        // Sunken wells around the "screens"
+        foreach (var screen in new Control[] { lcd, playlist, pathReadout, readout })
+            Skin.Bevel(g, Rectangle.Inflate(screen.Bounds, S(2), S(2)), raised: false, width: S(2));
+
+        DrawLabel(g, "DEVICES", 14, 136);
+        DrawLabel(g, "SAVE SCRIPT TO", 14, 412);
+        DrawLabel(g, "v0.1  ·  MIT  ·  github.com/edotwedo/Dualtooth", 14, 582);
+    }
+
+    void DrawTitleBar(Graphics g)
+    {
+        var bar = new Rectangle(S(3), S(3), ClientSize.Width - S(6), S(TitleBarHeight) - S(2));
+        using (var brush = new LinearGradientBrush(bar, Skin.BodyLight, Skin.Body, LinearGradientMode.Vertical))
+            g.FillRectangle(brush, bar);
+
+        const string title = "D U A L T O O T H";
+        var titleSize = TextRenderer.MeasureText(g, title, Skin.Label);
+        var titleX = (ClientSize.Width - titleSize.Width) / 2;
+        var titleY = bar.Y + (bar.Height - titleSize.Height) / 2;
+
+        // Ribbed grooves either side of the title
+        using var light = new Pen(Skin.BodyLight);
+        using var dark = new Pen(Skin.BodyDark);
+        var grooveEnd = minimizeButton.Left - S(8);
+        for (var i = 0; i < 3; i++)
+        {
+            var y = bar.Y + S(5) + i * S(3);
+            g.DrawLine(dark, S(10), y, titleX - S(8), y);
+            g.DrawLine(light, S(10), y + 1, titleX - S(8), y + 1);
+            g.DrawLine(dark, titleX + titleSize.Width + S(8), y, grooveEnd, y);
+            g.DrawLine(light, titleX + titleSize.Width + S(8), y + 1, grooveEnd, y + 1);
+        }
+        TextRenderer.DrawText(g, title, Skin.Label, new Point(titleX + 1, titleY + 1), Skin.BodyDark);
+        TextRenderer.DrawText(g, title, Skin.Label, new Point(titleX, titleY), Skin.Cyan);
+    }
+
+    void DrawLabel(Graphics g, string text, int x, int y) =>
+        TextRenderer.DrawText(g, text, Skin.Label, new Point(S(x), S(y)), Skin.LabelText);
+
+    // Drag the window from anywhere that isn't a control, like the old players.
+    protected override void OnMouseDown(MouseEventArgs e)
+    {
+        base.OnMouseDown(e);
+        if (e.Button != MouseButtons.Left) return;
+        ReleaseCapture();
+        SendMessage(Handle, 0xA1 /* WM_NCLBUTTONDOWN */, 2 /* HTCAPTION */, 0);
+    }
+
+    [DllImport("user32.dll")] static extern bool ReleaseCapture();
+    [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
 }
