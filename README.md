@@ -1,5 +1,7 @@
 # Dualtooth
 
+<p align="center"><img src="docs/screenshot.png" width="470" alt="Dualtooth window"></p>
+
 Use the same Bluetooth keyboard, mouse, headphones or controller in Windows **and** Linux on a
 dual-boot PC, without pairing them again every time you switch.
 
@@ -10,6 +12,8 @@ PC, but Windows and Linux each make their own when you pair. So whichever OS pai
 the other one doesn't. Dualtooth copies Windows' keys into Linux so both use the same one.
 
 ## How to use it
+
+**[Download Dualtooth.exe](https://github.com/edotwedo/Dualtooth/releases/latest)**: one file, runs on 64-bit Windows 10 or 11, nothing to install.
 
 1. **Pair each device in Linux first, then in Windows.** (Skip this if they already work in Windows
    and you're fine re-pairing them there once.) Windows must be the *last* place you paired them.
