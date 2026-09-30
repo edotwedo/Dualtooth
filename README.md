@@ -17,7 +17,8 @@ the other one doesn't. Dualtooth copies Windows' keys into Linux so both use the
 
 1. **Make sure your devices work in Windows.** If one doesn't, pair it in Windows now.
 2. Run **Dualtooth.exe** and click **Yes** on the admin prompt.
-3. Click the devices you want so their lights come on, then hit **SYNC TO LINUX**.
+3. Click the devices you want so their lights come on, then press **CREATE LINUX SCRIPT**.
+   The app walks you through each step and shows exactly what to do next.
 4. Boot Linux, open a terminal in the folder with the script (Linux can read your Windows drive), and run:
    ```
    sudo bash dualtooth-apply.sh
