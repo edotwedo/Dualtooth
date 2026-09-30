@@ -229,7 +229,7 @@ sealed class MainForm : Form
         var g = e.Graphics;
         var outer = ClientRectangle;
 
-        // Body: a soft indigo glow from the top
+        // Body: a soft warm glow from the top
         using (var body = new LinearGradientBrush(outer, ControlPaint.Light(Skin.Body, 0.18f), Skin.Body, LinearGradientMode.Vertical))
             g.FillRectangle(body, outer);
         using (var edge = new Pen(Skin.BodyLight))
@@ -261,7 +261,7 @@ sealed class MainForm : Form
         var titleX = S(14) + (int)(ring * 1.6f) + S(8);
         var titleSize = TextRenderer.MeasureText(g, "dualtooth", Skin.Title);
         var titleY = S(2) + (S(TitleBarHeight) - titleSize.Height) / 2;
-        TextRenderer.DrawText(g, "dualtooth", Skin.Title, new Point(titleX, titleY), Color.FromArgb(0xE4, 0xE1, 0xF7));
+        TextRenderer.DrawText(g, "dualtooth", Skin.Title, new Point(titleX, titleY), Skin.BrightText);
     }
 
     void DrawLabel(Graphics g, string text, int x, int y) =>

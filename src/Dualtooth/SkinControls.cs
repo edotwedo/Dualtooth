@@ -58,7 +58,7 @@ sealed class SkinButton : SkinControl
             using (var shine = new Pen(Color.FromArgb(40, Color.White)))
                 g.DrawLine(shine, r.Left + radius, r.Top + 1, r.Right - radius, r.Top + 1);
 
-        var textColor = !Enabled ? Skin.BodyLight : Accent ? Skin.Accent : Color.FromArgb(0xE4, 0xE1, 0xF7);
+        var textColor = !Enabled ? Skin.BodyLight : Accent ? Skin.Accent : Skin.BrightText;
         var textRect = Rectangle.Round(r);
         if (pressed) textRect.Offset(0, 1);
         TextRenderer.DrawText(g, Text, Font, textRect, textColor,

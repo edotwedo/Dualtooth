@@ -5,17 +5,19 @@ namespace Dualtooth;
 /// <summary>Colors, fonts and drawing helpers for the Dualtooth skin.</summary>
 static class Skin
 {
-    public static readonly Color Body = Color.FromArgb(0x1F, 0x1C, 0x36);
-    public static readonly Color BodyLight = Color.FromArgb(0x45, 0x3F, 0x70);
-    public static readonly Color BodyDark = Color.FromArgb(0x0E, 0x0C, 0x1C);
-    public static readonly Color Lcd = Color.FromArgb(0x05, 0x10, 0x16);
-    public static readonly Color Glow = Color.FromArgb(0x5C, 0xF2, 0xE6);
-    public static readonly Color GlowDim = Color.FromArgb(0x2A, 0x7A, 0x78);
-    public static readonly Color GlowShadow = Color.FromArgb(0x0A, 0x2E, 0x33);
-    public static readonly Color Accent = Color.FromArgb(0xFF, 0x6F, 0xAE);
-    public static readonly Color Red = Color.FromArgb(0xFF, 0x5A, 0x5A);
-    public static readonly Color Selection = Color.FromArgb(0x3A, 0x2A, 0x7A);
-    public static readonly Color LabelText = Color.FromArgb(0xA9, 0xA3, 0xD6);
+    // Warm incandescent palette: filament-orange glow on smoky dark brown.
+    public static readonly Color Body = Color.FromArgb(0x22, 0x18, 0x12);
+    public static readonly Color BodyLight = Color.FromArgb(0x4E, 0x36, 0x27);
+    public static readonly Color BodyDark = Color.FromArgb(0x0F, 0x09, 0x06);
+    public static readonly Color Lcd = Color.FromArgb(0x12, 0x08, 0x04);
+    public static readonly Color Glow = Color.FromArgb(0xFF, 0x9F, 0x3A);
+    public static readonly Color GlowDim = Color.FromArgb(0x8A, 0x4B, 0x18);
+    public static readonly Color GlowShadow = Color.FromArgb(0x3D, 0x1A, 0x06);
+    public static readonly Color Accent = Color.FromArgb(0xFF, 0xD9, 0x8A);
+    public static readonly Color Red = Color.FromArgb(0xFF, 0x55, 0x3D);
+    public static readonly Color Selection = Color.FromArgb(0x5C, 0x2C, 0x10);
+    public static readonly Color LabelText = Color.FromArgb(0xD6, 0xB4, 0x96);
+    public static readonly Color BrightText = Color.FromArgb(0xF6, 0xE6, 0xD6);
 
     public static readonly Font LcdLarge = new("Consolas", 13f, FontStyle.Bold);
     public static readonly Font LcdSmall = new("Consolas", 9.5f, FontStyle.Bold);
