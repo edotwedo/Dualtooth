@@ -42,6 +42,12 @@ Windows keeps pairing keys in `HKLM\SYSTEM\CurrentControlSet\Services\BTHPORT\Pa
 only the SYSTEM account can read. Dualtooth enables the backup privilege (every administrator has it)
 and opens those keys read-only in backup mode. It never changes anything on Windows.
 
+## Mac users: help wanted 🍎
+
+Dual-booting a Mac (Boot Camp, Asahi Linux or a Hackintosh)? We'd love to add macOS support,
+but need real Macs to test on. A **read-only, 5-minute probe** that never touches your keys
+helps a lot: see [docs/macos.md](docs/macos.md).
+
 ## Status
 
 | | |

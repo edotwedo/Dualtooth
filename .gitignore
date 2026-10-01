@@ -489,3 +489,6 @@ publish-standalone/
 # Local helper scripts
 publish.ps1
 check-irk.ps1
+
+# ...but do publish the Mac probe tool
+!tools/*.sh
