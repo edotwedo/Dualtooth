@@ -15,14 +15,6 @@ sealed class MainForm : Form
     const string Tagline = "DUALTOOTH v0.1  //  ONE KEYBOARD, TWO OPERATING SYSTEMS  //  NOW WITH 100% FEWER BORROWED KEYBOARDS  //  PAIR ONCE, BOOT ANYWHERE  //  ";
     const int TitleBarHeight = 24;
 
-    const string AboutText =
-        "Dualtooth makes your Bluetooth devices work in both Windows and Linux on a dual-boot PC.\n\n" +
-        "Why it's needed: each device remembers only one pairing per computer, but Windows and Linux each " +
-        "make their own. Whichever system paired last wins, and the other one stops working.\n\n" +
-        "What it does: Dualtooth reads the pairings Windows already has (it only reads; nothing on Windows " +
-        "changes) and writes a small script. Run that script once in Linux, and both systems share the same " +
-        "pairing, so your devices just work in either one.";
-
     readonly LcdDisplay lcd = new();
     readonly DevicePlaylist playlist = new() { EmptyText = "Reading your Bluetooth pairings..." };
     readonly SkinButton allButton = new() { Text = "ALL" };
@@ -34,6 +26,11 @@ sealed class MainForm : Form
     readonly LcdReadout nextSteps = new() { Font = Skin.Guide };
     readonly SkinButton showFileButton = new() { Text = "SHOW FILE", Visible = false };
     readonly SkinButton helpButton = new() { Text = "?" };
+    readonly SkinButton guideButton = new()
+    {
+        Text = "📖   NEW HERE?  WHAT DUALTOOTH DOES + STEP-BY-STEP GUIDE",
+        Accent = true,
+    };
     readonly SkinButton minimizeButton = new() { Text = "–" };
     readonly SkinButton closeButton = new() { Text = "×" };
     readonly ToolTip tips = new() { InitialDelay = 300 };
@@ -49,10 +46,10 @@ sealed class MainForm : Form
     // Step headings: number, title, one-line "what this is for", and their y position.
     static readonly (int Number, string Title, string Hint, int Y)[] Steps =
     [
-        (1, "CHOOSE YOUR DEVICES", "Lit up = will work in Linux too. Click a device to switch it on or off.", 126),
-        (2, "WHERE TO SAVE THE LINUX SCRIPT", "Anywhere Linux can open. Your Desktop is fine.", 374),
-        (3, "CREATE THE SCRIPT", "Writes one small file. Nothing on this PC changes.", 446),
-        (4, "WHAT'S NEXT", "", 536),
+        (1, "CHOOSE YOUR DEVICES", "Lit up = will work in Linux too. Click a device to switch it on or off.", 186),
+        (2, "WHERE TO SAVE THE LINUX SCRIPT", "Anywhere Linux can open. Your Desktop is fine.", 386),
+        (3, "CREATE THE SCRIPT", "Writes one small file. Nothing on this PC changes.", 458),
+        (4, "WHAT'S NEXT", "", 548),
     ];
 
     int S(float value) => (int)Math.Round(value * scale);
@@ -68,23 +65,25 @@ sealed class MainForm : Form
         BackColor = Skin.Body;
         DoubleBuffered = true;
         StartPosition = FormStartPosition.CenterScreen;
-        ClientSize = new Size(S(470), S(684));
+        ClientSize = new Size(S(470), S(680));
 
         Place(helpButton, 396, 5, 20, 15);
         Place(minimizeButton, 420, 5, 20, 15);
         Place(closeButton, 444, 5, 20, 15);
         Place(lcd, 14, 34, 442, 80);
-        Place(radioButton, 238, 128, 100, 18);
-        Place(allButton, 344, 128, 54, 18);
-        Place(noneButton, 402, 128, 54, 18);
-        Place(playlist, 14, 166, 442, 196);
-        Place(pathReadout, 14, 412, 372, 24);
-        Place(browseButton, 394, 412, 62, 24);
-        Place(createButton, 14, 486, 442, 40);
-        Place(showFileButton, 376, 538, 80, 18);
-        Place(nextSteps, 14, 562, 442, 96);
+        Place(guideButton, 14, 142, 442, 34);
+        Place(radioButton, 238, 188, 100, 18);
+        Place(allButton, 344, 188, 54, 18);
+        Place(noneButton, 402, 188, 54, 18);
+        Place(playlist, 14, 226, 442, 150);
+        Place(pathReadout, 14, 424, 372, 24);
+        Place(browseButton, 394, 424, 62, 24);
+        Place(createButton, 14, 498, 442, 40);
+        Place(showFileButton, 376, 550, 80, 18);
+        Place(nextSteps, 14, 574, 442, 80);
 
-        tips.SetToolTip(helpButton, "What is Dualtooth?");
+        tips.SetToolTip(helpButton, "Open the how-to guide");
+        tips.SetToolTip(guideButton, "Step-by-step instructions and help if something goes wrong");
         tips.SetToolTip(allButton, "Switch on every device");
         tips.SetToolTip(noneButton, "Switch off every device");
         tips.SetToolTip(radioButton, "Your PC has pairings saved for more than one Bluetooth radio (for example an old USB dongle). Click to switch.");
@@ -93,7 +92,8 @@ sealed class MainForm : Form
         tips.SetToolTip(createButton, "Write the Linux script for the devices that are lit up");
         tips.SetToolTip(showFileButton, "Open the folder with the script in File Explorer");
 
-        helpButton.Click += (_, _) => MessageBox.Show(this, AboutText, "What is Dualtooth?", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        helpButton.Click += (_, _) => OpenGuide();
+        guideButton.Click += (_, _) => OpenGuide();
         minimizeButton.Click += (_, _) => WindowState = FormWindowState.Minimized;
         closeButton.Click += (_, _) => Close();
         allButton.Click += (_, _) => playlist.SetAll(true);
@@ -218,8 +218,8 @@ sealed class MainForm : Form
         if (scriptCreated) return;
         nextSteps.TextColor = Skin.Glow;
         nextSteps.Text = on > 0
-            ? "Pick the devices you want in step 1, then press CREATE LINUX SCRIPT.\n\n" +
-              "Devices that already work in Windows are the ones Dualtooth can copy."
+            ? "Pick the devices you want in step 1, then press CREATE LINUX SCRIPT.\n" +
+              "Not sure what to do? Click the big button at the top for the full guide."
             : "Switch on at least one device in step 1 to continue.";
     }
 
@@ -268,6 +268,23 @@ sealed class MainForm : Form
             "Afterwards, delete the script. It contains your pairing keys.";
     }
 
+    /// <summary>Unpacks the guide built into the exe and opens it in the default browser, so it works offline.</summary>
+    void OpenGuide()
+    {
+        try
+        {
+            using var stream = typeof(MainForm).Assembly.GetManifestResourceStream("Dualtooth.guide.html")!;
+            var path = Path.Combine(Path.GetTempPath(), "Dualtooth", "guide.html");
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            using (var file = File.Create(path)) stream.CopyTo(file);
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            ShowError("COULDN'T OPEN THE GUIDE", $"The guide is also online at github.com/edotwedo/Dualtooth.\n\nDetails: {ex.Message}");
+        }
+    }
+
     void ShowError(string headline, string detail)
     {
         lcd.Line2Color = Skin.Red;
@@ -293,10 +310,15 @@ sealed class MainForm : Form
         foreach (var screen in new Control[] { lcd, playlist, pathReadout, nextSteps })
             Skin.Well(g, screen.Bounds, scale);
 
+        // What this app is, in one sentence, right under the screen.
+        TextRenderer.DrawText(g, "Lets your Bluetooth devices work in both Windows and Linux.",
+            Skin.Hint, new Rectangle(S(14), S(120), S(442), S(18)), Skin.BrightText,
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.SingleLine);
+
         foreach (var step in Steps)
             DrawStep(g, step.Number, step.Title, step.Hint, step.Y);
 
-        TextRenderer.DrawText(g, "v0.1  ·  MIT  ·  github.com/edotwedo/Dualtooth", Skin.Label, new Point(S(14), S(666)), Skin.GlowDim);
+        TextRenderer.DrawText(g, "v0.1  ·  MIT  ·  github.com/edotwedo/Dualtooth", Skin.Label, new Point(S(14), S(661)), Skin.GlowDim);
     }
 
     void DrawStep(Graphics g, int number, string title, string hint, int y)

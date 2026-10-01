@@ -485,3 +485,7 @@ $RECYCLE.BIN/
 publish/
 publish-standalone/
 *.sh
+
+# Local helper scripts
+publish.ps1
+check-irk.ps1

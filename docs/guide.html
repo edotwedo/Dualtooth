@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dualtooth Guide</title>
+<style>
+  :root {
+    --bg: #1a120d; --panel: #221812; --panel-2: #2c1f17; --line: #4e3627;
+    --glow: #ff9f3a; --hot: #ffd98a; --text: #f3e4d4; --muted: #d6b496; --warn: #ff7a5a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.6 "Segoe UI", system-ui, sans-serif;
+  }
+  main { max-width: 780px; margin: 0 auto; padding: 40px 20px 80px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .logo { width: 40px; height: 26px; position: relative; flex: none; }
+  .logo::before, .logo::after {
+    content: ""; position: absolute; top: 0; width: 24px; height: 24px; border-radius: 50%;
+    border: 3px solid var(--glow);
+  }
+  .logo::after { left: 15px; border-color: var(--hot); }
+  h1 { font-size: 32px; margin: 0; letter-spacing: .5px; }
+  .tagline { color: var(--muted); margin: 0 0 28px; }
+  h2 {
+    color: var(--glow); font-size: 22px; margin: 44px 0 12px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  h3 { color: var(--hot); font-size: 18px; margin: 26px 0 8px; }
+  a { color: var(--hot); }
+  code, kbd {
+    font-family: Consolas, "Cascadia Mono", monospace; font-size: .92em;
+    background: #120804; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; color: var(--glow);
+  }
+  .cmd {
+    display: block; font-family: Consolas, monospace; font-size: 18px; font-weight: bold;
+    background: #120804; color: var(--glow); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 16px; margin: 10px 0; user-select: all;
+  }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin: 16px 0; }
+  .box.warn { border-color: #7a3a22; }
+  .box.warn strong:first-child { color: var(--warn); }
+  ol.steps { counter-reset: step; list-style: none; padding: 0; margin: 0; }
+  ol.steps > li {
+    counter-increment: step; position: relative; padding: 14px 16px 14px 62px; margin: 12px 0;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  }
+  ol.steps > li::before {
+    content: counter(step); position: absolute; left: 16px; top: 14px; width: 30px; height: 30px;
+    border-radius: 50%; border: 2px solid var(--glow); color: var(--glow); font-weight: bold;
+    display: grid; place-items: center; box-shadow: 0 0 10px rgba(255, 159, 58, .35);
+  }
+  .see { display: block; margin-top: 6px; color: var(--muted); }
+  .see::before { content: "You should see: "; color: var(--hot); font-weight: 600; }
+  ul.check { list-style: none; padding: 0; }
+  ul.check li { padding-left: 30px; position: relative; margin: 8px 0; }
+  ul.check li::before { content: "☐"; position: absolute; left: 4px; color: var(--glow); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--hot); font-weight: 600; }
+  details { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; margin: 10px 0; padding: 0 16px; }
+  summary { cursor: pointer; padding: 12px 0; font-weight: 600; color: var(--text); }
+  details[open] summary { color: var(--glow); }
+  details > :last-child { margin-bottom: 14px; }
+  nav.toc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 18px; }
+  nav.toc a { display: inline-block; margin: 4px 14px 4px 0; }
+  footer { margin-top: 56px; color: var(--muted); font-size: 14px; }
+  @media print {
+    body { background: #fff; color: #0000aa; }
+    h2, h3, .cmd, code, a { color: #0000aa; }
+    .box, ol.steps > li, details, nav.toc, .cmd, code { background: #fff; border-color: #0000aa; }
+    nav.toc { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<header><span class="logo" aria-hidden="true"></span><h1>Dualtooth guide</h1></header>
+<p class="tagline">Use the same Bluetooth keyboard, mouse or headphones in Windows <em>and</em> Linux, without pairing them again every time you switch.</p>
+
+<nav class="toc">
+  <a href="#what">What it does</a>
+  <a href="#before">Before you start</a>
+  <a href="#windows">Part 1: Windows</a>
+  <a href="#linux">Part 2: Linux</a>
+  <a href="#after">Afterwards</a>
+  <a href="#help">Something went wrong</a>
+  <a href="#devices">Which devices work</a>
+</nav>
+
+<h2 id="what">What Dualtooth does</h2>
+<p>When you pair a Bluetooth device, the device and your PC agree on a secret key, like a handshake only they know.</p>
+<p><strong>The problem:</strong> each device remembers only <em>one</em> handshake per PC. Windows and Linux each make their own when you pair. So whichever system you paired in last works, and the other one doesn't.</p>
+<p><strong>The fix:</strong> Dualtooth copies the handshake Windows already has into Linux. After that, both systems use the same one, and your devices just work in either.</p>
+<div class="box">It takes about <strong>5 minutes</strong>: one click in Windows, then one command in Linux. Dualtooth never changes anything on Windows. It only reads.</div>
+
+<h2 id="before">Before you start</h2>
+<ul class="check">
+  <li><strong>Your devices work in Windows right now.</strong> If one doesn't, pair it in Windows first (<em>Settings › Bluetooth &amp; devices › Add device</em>).</li>
+  <li><strong>You know your Linux password.</strong> You'll type it once. (Forgot it? See <a href="#forgot">I forgot my Linux password</a>.)</li>
+  <li><strong>You have a way to type in Linux the first time.</strong> Until Dualtooth's script has run, your Bluetooth keyboard won't work in Linux yet. Use a wired keyboard for this one time, or use your mouse and copy-paste the command.</li>
+</ul>
+
+<h2 id="windows">Part 1: In Windows</h2>
+<ol class="steps">
+  <li><strong>Open Dualtooth.exe.</strong> Windows asks <em>"Do you want to allow this app to make changes?"</em>. Click <strong>Yes</strong>. Dualtooth needs this to <em>read</em> your Bluetooth pairings; it doesn't change anything.
+    <span class="see">the Dualtooth window, with your devices listed under step 1.</span></li>
+  <li><strong>Pick your devices.</strong> Each device has a little light. <strong>Lit up</strong> = it will work in Linux too. Click a device to turn its light on or off.
+    <span class="see">the screen at the top says how many devices will work in Linux.</span></li>
+  <li><strong>Check where the script will be saved</strong> (step 2 in the app). Your Desktop is the default and is perfect. Leave it unless you have a reason to change it.</li>
+  <li><strong>Click CREATE LINUX SCRIPT.</strong>
+    <span class="see">"SCRIPT CREATED" on the screen, and a checklist under "What's next". A file called <code>dualtooth-apply.sh</code> is now on your Desktop.</span></li>
+  <li><strong>Restart into Linux.</strong> Use <strong>Restart</strong>, not Shut down. (Restart lets Linux open your Windows drive; see <a href="#drive">why</a>.)</li>
+</ol>
+
+<h2 id="linux">Part 2: In Linux</h2>
+<ol class="steps">
+  <li><strong>Log in to Linux</strong> as usual.</li>
+  <li><strong>Open your file manager</strong> (usually called <em>Files</em>, <em>Dolphin</em> or <em>Nemo</em>).</li>
+  <li><strong>Open your Windows drive.</strong> Look in the left sidebar for something like <em>"1.6 TB Volume"</em>, <em>"Windows"</em> or <em>"Local Disk"</em>. If you don't see it, click <em>Other Locations</em>. Click it once to open it. It may ask for your Linux password.
+    <span class="see">folders like <code>Program Files</code>, <code>Users</code> and <code>Windows</code>.</span></li>
+  <li><strong>Go to</strong> <code>Users</code> › <code>your Windows username</code> › <code>Desktop</code>.
+    <span class="see"><code>dualtooth-apply.sh</code> in the list.</span></li>
+  <li><strong>Right-click an empty spot in that folder</strong> and choose <strong>Open in Terminal</strong>.
+    <span class="see">a terminal window with a blinking cursor.</span></li>
+  <li><strong>Type this exactly</strong>, then press <kbd>Enter</kbd>:
+    <span class="cmd">sudo bash dualtooth-apply.sh</span>
+    It asks for your password. <strong>Type your Linux password and press Enter. Nothing appears on screen while you type. That's normal.</strong> It's still working.
+    <span class="see">one line per device, like <code>Installed Logi K250 (C0:E1:5A:8F:83:AC)</code>, then <code>Done.</code></span></li>
+  <li><strong>Turn each device off and back on.</strong>
+    <span class="see">each device connects within a few seconds. 🎉 That's it, you're finished.</span></li>
+</ol>
+
+<h2 id="after">Afterwards</h2>
+<div class="box warn"><strong>Delete the script.</strong> <code>dualtooth-apply.sh</code> contains your Bluetooth pairing keys. Once your devices work in Linux, delete it from your Desktop and empty the Recycle Bin.</div>
+<div class="box warn"><strong>Don't pair these devices again</strong>, in Windows or Linux. Pairing again makes a new handshake and breaks the other system. If it happens anyway, no harm done: pair in Windows, then run Dualtooth again.</div>
+
+<h2 id="help">Something went wrong</h2>
+
+<details id="drive">
+  <summary>I can't open my Windows drive in Linux</summary>
+  <p>Windows has a feature called <strong>Fast Startup</strong> that leaves the drive "half asleep" when you shut down, and Linux won't touch it in that state.</p>
+  <p><strong>Fix:</strong> go back to Windows and use <strong>Restart</strong> (not Shut down) to get to Linux. Restart always fully closes the drive.</p>
+  <p><strong>Permanent fix:</strong> in Windows, open <em>Control Panel › Power Options › Choose what the power buttons do</em>, click <em>Change settings that are currently unavailable</em>, untick <strong>Turn on fast startup</strong>, and save.</p>
+  <p><strong>Other option:</strong> in step 2 of the app, save the script to a USB stick instead, and open it from the stick in Linux.</p>
+</details>
+
+<details>
+  <summary>It says "Bluetooth adapter … was not found"</summary>
+  <p>Nothing was changed. Linux can't see the same Bluetooth radio Windows used. Make sure Bluetooth is <strong>turned on</strong> in Linux's settings, then run the command again.</p>
+  <p>If your PC has more than one Bluetooth radio (for example an old USB dongle), open Dualtooth in Windows and use the <strong>OTHER RADIO</strong> button to pick the one Linux uses.</p>
+</details>
+
+<details>
+  <summary>It says "No such file or directory"</summary>
+  <p>The terminal isn't in the folder with the script. Close it, go back to step 5 of Part 2, and make sure you right-click inside the <em>Desktop</em> folder where you can see <code>dualtooth-apply.sh</code>.</p>
+</details>
+
+<details>
+  <summary>It says "incorrect password" or "Sorry, try again"</summary>
+  <p>That's your Linux password being rejected. Type it slowly. Remember, nothing shows while you type. Check Caps Lock.</p>
+</details>
+
+<details id="forgot">
+  <summary>I forgot my Linux password</summary>
+  <p>You can set a new one from the boot menu. You'll need a keyboard there.</p>
+  <ol>
+    <li>When the <strong>GRUB</strong> menu appears, press the <kbd>↓</kbd> key to stop the countdown. (If it skips straight to Linux, hold <kbd>Shift</kbd> or tap <kbd>Esc</kbd> while it starts.)</li>
+    <li>Highlight Linux and press <kbd>e</kbd>.</li>
+    <li>Find the line starting with <code>linux</code>, go to the end of it, and add a space then <code>init=/bin/bash</code>.</li>
+    <li>Press <kbd>Ctrl</kbd>+<kbd>X</kbd>. At the <code>#</code> prompt, type these one at a time:
+      <span class="cmd">mount -o remount,rw /</span>
+      <span class="cmd">ls /home</span>
+      The name it shows is your username. Then:
+      <span class="cmd">passwd yourusername</span>
+      Type a new password twice (nothing shows while typing), then:
+      <span class="cmd">sync</span>
+      <span class="cmd">reboot -f</span></li>
+  </ol>
+  <p>If Linux asks for a <em>disk encryption</em> password before the login screen, that's a different password, and this method can't reset it.</p>
+</details>
+
+<details>
+  <summary>It finished, but a device won't connect</summary>
+  <ul>
+    <li>Turn the device off and on again, then <strong>restart Linux</strong> once.</li>
+    <li>Was the device lit up in Dualtooth when you made the script? If not, make a new script with it switched on.</li>
+    <li>Did you pair it anywhere after making the script? Then pair it in Windows and run Dualtooth again.</li>
+    <li>Some newer earbuds and phones change their Bluetooth address every few minutes for privacy. Dualtooth doesn't support those yet (see <a href="#devices">Which devices work</a>).</li>
+  </ul>
+</details>
+
+<details>
+  <summary>Windows says "Windows protected your PC" when I open Dualtooth</summary>
+  <p>That's Windows SmartScreen being cautious about a new app it hasn't seen many people use. Click <strong>More info</strong>, then <strong>Run anyway</strong>.</p>
+</details>
+
+<details>
+  <summary>My keyboard doesn't work at the Linux login screen</summary>
+  <p>Dualtooth's script turns on a setting that powers Bluetooth up at startup, so this should be fixed after the first run. If it isn't, log in once with your mouse or a wired keyboard and run the script again.</p>
+</details>
+
+<h2 id="devices">Which devices work</h2>
+<table>
+  <tr><th>Device</th><th>Works?</th></tr>
+  <tr><td>Keyboards and mice</td><td>✅ Yes, tested on real hardware</td></tr>
+  <tr><td>Headphones, speakers, game controllers</td><td>✅ Supported (not yet tested on every model)</td></tr>
+  <tr><td>Phones</td><td>✅ Supported</td></tr>
+  <tr><td>Newer earbuds and phones that keep changing their address</td><td>⏳ Coming soon</td></tr>
+  <tr><td>Devices with a USB receiver (Logitech Unifying, Bolt)</td><td>Not needed. These aren't Bluetooth, so they already work everywhere.</td></tr>
+</table>
+
+<h2>Is it safe?</h2>
+<ul>
+  <li>Dualtooth <strong>only reads</strong> from Windows. It never changes Windows.</li>
+  <li>Your keys go into one file on your own PC and nowhere else. Nothing is uploaded.</li>
+  <li>In Linux, the script backs up anything it replaces (as <code>info.bak</code>) before writing.</li>
+</ul>
+
+<footer>Dualtooth · free and open source (MIT) · <a href="https://github.com/edotwedo/Dualtooth">github.com/edotwedo/Dualtooth</a></footer>
+</main>
+</body>
+</html>

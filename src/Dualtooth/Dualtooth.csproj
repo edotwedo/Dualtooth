@@ -4,6 +4,11 @@
     <ProjectReference Include="..\Dualtooth.Core\Dualtooth.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The how-to guide ships inside the exe so it works offline. -->
+    <EmbeddedResource Include="..\..\docs\guide.html" LogicalName="Dualtooth.guide.html" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <!-- The Windows 10 SDK target gives access to the Windows.Devices.Bluetooth APIs. -->
