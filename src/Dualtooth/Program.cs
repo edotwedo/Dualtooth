@@ -1,3 +1,5 @@
+using Dualtooth.Core;
+
 namespace Dualtooth;
 
 static class Program
@@ -14,6 +16,16 @@ static class Program
             var report = IrkCheck.RunAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "dualtooth-irk-check.txt");
             File.WriteAllText(path, report);
+            return;
+        }
+
+        if (args.Contains("--irk-probe"))
+        {
+            // No window: write a fingerprint-only Linux script that settles the IRK byte order.
+            var devices = KeyReader.ReadAll().SelectMany(a => a.Devices).ToList();
+            foreach (var device in devices) DeviceLookup.DescribeAsync(device).GetAwaiter().GetResult();
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "dualtooth-irk-probe.sh");
+            File.WriteAllText(path, IrkProbe.Generate(devices, DateTime.Now), new System.Text.UTF8Encoding(false));
             return;
         }
 
