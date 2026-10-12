@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text;
 using Dualtooth.Core;
+using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
 
 namespace Dualtooth;
@@ -18,18 +19,32 @@ static class IrkCheck
         foreach (var device in devices) await DeviceLookup.DescribeAsync(device);
 
         var seen = new ConcurrentDictionary<ulong, int>();
+        var allAddresses = new ConcurrentDictionary<ulong, BluetoothAddressType>();
+        var pairedHeard = new ConcurrentDictionary<ulong, int>();
+        var pairedAddresses = devices.Select(d => d.Address.Value).ToHashSet();
+        var advertisements = 0;
         var watcher = new BluetoothLEAdvertisementWatcher { ScanningMode = BluetoothLEScanningMode.Active };
         watcher.Received += (_, e) =>
         {
+            Interlocked.Increment(ref advertisements);
+            allAddresses.TryAdd(e.BluetoothAddress, e.BluetoothAddressType);
+            if (pairedAddresses.Contains(e.BluetoothAddress)) pairedHeard.AddOrUpdate(e.BluetoothAddress, 1, (_, n) => n + 1);
             if (Rpa.IsResolvable(e.BluetoothAddress)) seen.AddOrUpdate(e.BluetoothAddress, 1, (_, n) => n + 1);
         };
         watcher.Start();
         await Task.Delay(duration);
+        var status = watcher.Status;
         watcher.Stop();
 
         var report = new StringBuilder();
         report.AppendLine($"Dualtooth IRK check, {DateTime.Now:yyyy-MM-dd HH:mm}");
-        report.AppendLine($"Listened for {duration.TotalSeconds:0} seconds. Rotating addresses heard: {seen.Count}. Paired devices with an IRK: {devices.Count}.");
+        report.AppendLine($"Listened for {duration.TotalSeconds:0} seconds. Scanner status: {status}.");
+        report.AppendLine($"Broadcasts heard: {advertisements} from {allAddresses.Count} devices " +
+            $"({allAddresses.Values.Count(t => t == BluetoothAddressType.Public)} public, {allAddresses.Values.Count(t => t == BluetoothAddressType.Random)} random).");
+        report.AppendLine($"Rotating addresses heard: {seen.Count}. Paired devices with an IRK: {devices.Count}.");
+        if (pairedHeard.Count > 0)
+            report.AppendLine($"Paired devices heard by their real address (radio may be unscrambling them): " +
+                string.Join(", ", devices.Where(d => pairedHeard.ContainsKey(d.Address.Value)).Select(d => BlueZInfo.SanitizeName(d.Name))));
         report.AppendLine();
 
         int asIs = 0, reversed = 0;

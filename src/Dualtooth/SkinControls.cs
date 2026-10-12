@@ -62,7 +62,7 @@ sealed class SkinButton : SkinControl
         var textRect = Rectangle.Round(r);
         if (pressed) textRect.Offset(0, 1);
         TextRenderer.DrawText(g, Text, Font, textRect, textColor,
-            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine);
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
     }
 }
 
