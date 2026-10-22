@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dualtooth — Seamless Bluetooth Pairing for Windows &amp; Linux Dual-Boot</title>
-  <meta name="description" content="Pair your Bluetooth keyboard, mouse, and headphones once. Use them on both Windows and Linux without re-pairing on every boot. Full BLE 5.0 &amp; BitLocker support.">
+  <meta name="description" content="Pair your Bluetooth keyboard, mouse, and headphones once. Use them on both Windows and Linux without re-pairing on every boot. Full BLE 5.0, IRK &amp; BitLocker support.">
   <meta property="og:title" content="Dualtooth — Fix Bluetooth on Windows & Linux Dual-Boot">
   <meta property="og:description" content="Never re-pair your Bluetooth devices again when switching OS. Full BLE 5.0, IRK, BitLocker USB export, and hardware skins.">
   <meta property="og:image" content="https://raw.githubusercontent.com/edotwedo/Dualtooth/main/docs/banner.jpg">
@@ -24,6 +24,7 @@
       --muted: #a69b91;
       --code-bg: #151720;
       --success: #3dd68c;
+      --info: #38bdf8;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,13 +48,13 @@
 
     /* Header Nav */
     header {
-      padding: 24px 0;
+      padding: 20px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       backdrop-filter: blur(12px);
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(13, 14, 18, 0.85);
+      background: rgba(13, 14, 18, 0.88);
     }
     .nav-inner {
       display: flex;
@@ -78,7 +79,7 @@
     }
     .nav-links {
       display: flex;
-      gap: 20px;
+      gap: 18px;
       align-items: center;
     }
     .nav-links a {
@@ -106,7 +107,7 @@
 
     /* Hero */
     .hero {
-      padding: 80px 0 60px;
+      padding: 70px 0 50px;
       text-align: center;
     }
     .pill {
@@ -194,13 +195,13 @@
       display: block;
     }
 
-    /* Problem / Solution Grid */
+    /* Section */
     .section {
-      padding: 80px 0;
+      padding: 70px 0;
     }
     .section-title {
       text-align: center;
-      margin-bottom: 50px;
+      margin-bottom: 46px;
     }
     .section-title h2 {
       font-size: 2.2rem;
@@ -215,6 +216,7 @@
       margin: 0 auto;
     }
 
+    /* Pain vs Gain */
     .pain-vs-gain {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -287,7 +289,7 @@
     /* Comparison Table */
     .compare-table-wrap {
       overflow-x: auto;
-      margin-top: 30px;
+      margin-top: 20px;
     }
     table.compare-table {
       width: 100%;
@@ -308,6 +310,109 @@
       background: rgba(255, 159, 58, 0.05);
       font-weight: 600;
       color: var(--success);
+    }
+
+    /* Compatibility Grid */
+    .compat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .compat-category {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .compat-category h3 {
+      font-size: 1.15rem;
+      color: var(--hot);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .compat-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .compat-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    /* Security & Transparency Box */
+    .security-box {
+      background: linear-gradient(180deg, rgba(22, 24, 33, 0.85), rgba(16, 18, 25, 0.9));
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      padding: 36px;
+      margin-bottom: 30px;
+    }
+    .security-badge-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .security-badge-header h3 {
+      font-size: 1.35rem;
+      color: var(--info);
+    }
+    .hash-display {
+      background: #090a0f;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+      color: var(--hot);
+      word-break: break-all;
+      margin: 14px 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .smartscreen-guide {
+      background: rgba(255, 159, 58, 0.08);
+      border-left: 4px solid var(--glow);
+      padding: 16px 20px;
+      border-radius: 0 10px 10px 0;
+      margin-top: 20px;
+      font-size: 0.95rem;
+    }
+    .smartscreen-guide strong {
+      color: var(--hot);
+    }
+
+    /* FAQ Accordion */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .faq-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px 24px;
+    }
+    .faq-item h4 {
+      font-size: 1.15rem;
+      color: var(--hot);
+      margin-bottom: 8px;
+    }
+    .faq-item p {
+      color: var(--muted);
+      font-size: 0.95rem;
     }
 
     /* Pricing Section */
@@ -394,8 +499,10 @@
       </a>
       <div class="nav-links">
         <a href="#features">Features</a>
-        <a href="#comparison">Comparison</a>
-        <a href="guide.html">Documentation</a>
+        <a href="#compatibility">Compatibility</a>
+        <a href="#security">Security</a>
+        <a href="#faq">FAQ</a>
+        <a href="guide.html">Docs</a>
         <a href="https://github.com/edotwedo/Dualtooth" target="_blank">GitHub</a>
         <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900" class="nav-cta">Buy $9 License</a>
       </div>
@@ -559,6 +666,152 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Verified Compatibility Matrix -->
+  <section class="section" id="compatibility">
+    <div class="container">
+      <div class="section-title">
+        <h2>Verified Hardware &amp; Distro Matrix</h2>
+        <p>Tested against popular dual-boot configurations, chipsets, and Bluetooth 5.x peripherals.</p>
+      </div>
+
+      <div class="compat-grid">
+        <div class="compat-category">
+          <h3>🖱️ Mice &amp; Pointing</h3>
+          <div class="compat-pills">
+            <span class="compat-pill">Logitech MX Master 3S / 3</span>
+            <span class="compat-pill">Logitech MX Anywhere 3S</span>
+            <span class="compat-pill">Apple Magic Mouse 2</span>
+            <span class="compat-pill">Razer Pro Click / Basilisk</span>
+            <span class="compat-pill">Microsoft Modern Mobile</span>
+          </div>
+        </div>
+
+        <div class="compat-category">
+          <h3>⌨️ Keyboards</h3>
+          <div class="compat-pills">
+            <span class="compat-pill">Apple Magic Keyboard</span>
+            <span class="compat-pill">Keychron K2 / K3 / K8 Pro</span>
+            <span class="compat-pill">Logitech MX Keys / Craft</span>
+            <span class="compat-pill">NuPhy Air75 / Halo65</span>
+            <span class="compat-pill">Anne Pro 2</span>
+          </div>
+        </div>
+
+        <div class="compat-category">
+          <h3>🎧 Audio &amp; Headsets</h3>
+          <div class="compat-pills">
+            <span class="compat-pill">Sony WH-1000XM4 / XM5</span>
+            <span class="compat-pill">Apple AirPods / Pro / Max</span>
+            <span class="compat-pill">Bose QuietComfort 35 / 45 / Ultra</span>
+            <span class="compat-pill">Sennheiser Momentum 4</span>
+          </div>
+        </div>
+
+        <div class="compat-category">
+          <h3>🎮 Gaming Controllers</h3>
+          <div class="compat-pills">
+            <span class="compat-pill">Xbox Wireless Series X|S</span>
+            <span class="compat-pill">PlayStation DualSense (BT)</span>
+            <span class="compat-pill">8BitDo Pro 2 / Ultimate</span>
+            <span class="compat-pill">Nintendo Switch Pro</span>
+          </div>
+        </div>
+
+        <div class="compat-category">
+          <h3>🐧 Linux Distributions</h3>
+          <div class="compat-pills">
+            <span class="compat-pill">Ubuntu 22.04 / 24.04 LTS</span>
+            <span class="compat-pill">Debian 12 / 13 (Trixie)</span>
+            <span class="compat-pill">Fedora 39 / 40 / 41</span>
+            <span class="compat-pill">Arch Linux / Manjaro</span>
+            <span class="compat-pill">Linux Mint 21 / 22</span>
+            <span class="compat-pill">CachyOS / Pop!_OS</span>
+            <span class="compat-pill">Bazzite / SteamOS (Handhelds)</span>
+          </div>
+        </div>
+
+        <div class="compat-category">
+          <h3>🪟 Windows OS</h3>
+          <div class="compat-pills">
+            <span class="compat-pill">Windows 11 (22H2 / 23H2 / 24H2)</span>
+            <span class="compat-pill">Windows 10 (21H2+)</span>
+            <span class="compat-pill">BitLocker Encrypted Drives</span>
+            <span class="compat-pill">UEFI Secure Boot Enabled</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security & Integrity -->
+  <section class="section" id="security">
+    <div class="container">
+      <div class="section-title">
+        <h2>Security &amp; Binary Integrity</h2>
+        <p>100% offline execution. Zero telemetry. Inspectable hashes.</p>
+      </div>
+
+      <div class="security-box">
+        <div class="security-badge-header">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <h3>Official Release v0.2.0 Checksum</h3>
+        </div>
+        <p style="color: var(--muted); font-size: 0.95rem;">
+          Verify your standalone binary matches our official release build before running. You can check this in PowerShell with <code>Get-FileHash Dualtooth.exe</code>:
+        </p>
+        <div class="hash-display">
+          <span>SHA-256: 8C63EA94C5F229285E5C8321D500C9C3C4A405E70140C8F06AEF93D895456981</span>
+        </div>
+
+        <p style="font-size: 0.95rem; color: var(--muted);">
+          🛡️ <strong>VirusTotal Verification:</strong> View the independent security scan report on <a href="https://www.virustotal.com/gui/file/8c63ea94c5f229285e5c8321d500c9c3c4a405e70140c8f06aef93d895456981" target="_blank" style="color: var(--hot); text-decoration: underline;">VirusTotal</a>.
+        </p>
+
+        <div class="smartscreen-guide">
+          <strong>Why does Windows Defender SmartScreen appear on first launch?</strong><br>
+          Microsoft displays a blue <em>"Windows protected your PC"</em> warning on newly compiled binaries from independent developers until thousands of global enterprise installations accumulate, or developers purchase an annual $500 corporate EV certificate. Dualtooth is an offline, privacy-first utility that never connects to the internet. Simply click <strong>"More info"</strong> and then <strong>"Run anyway"</strong>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-title">
+        <h2>Frequently Asked Questions</h2>
+        <p>Everything you need to know about how Dualtooth works.</p>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <h4>Do I have to run Dualtooth every time I reboot?</h4>
+          <p>No. You only run Dualtooth once after pairing a new device. Once the pairing keys are synchronized into Linux's BlueZ database, both operating systems recognize the peripheral permanently on every subsequent boot.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Does Dualtooth work with BitLocker disk encryption?</h4>
+          <p>Yes. If your Windows drive is encrypted with BitLocker, Linux cannot read the Windows registry hive directly without your BitLocker recovery key. Dualtooth provides a 1-click <code>[🔌 USB]</code> export feature that writes the keys and an auto-launching <code>.desktop</code> script directly to any FAT32 USB thumb drive, bypassing BitLocker completely.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>What if I want to undo the changes?</h4>
+          <p>Dualtooth creates an automatic timestamped backup of every configuration file before writing. You can run <code>Dualtooth.exe --undo</code> from command line or click Rollback to restore your original state instantly.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>How do I get the download after purchasing?</h4>
+          <p>Your browser is redirected immediately to download the <code>Dualtooth.exe</code> standalone binary the second your Stripe payment completes. You also receive an email receipt with permanent download instructions.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Are there any recurring subscriptions or telemetry?</h4>
+          <p>No. Dualtooth is a one-time $9.00 lifetime purchase. There are no subscriptions, no accounts to create, and zero network telemetry. It runs 100% locally and offline.</p>
+        </div>
       </div>
     </div>
   </section>
