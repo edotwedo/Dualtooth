@@ -9,8 +9,11 @@
 </p>
 
 <p align="center">
-  <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900"><img src="https://img.shields.io/badge/Support_Project-Buy_License_%2F_Tip-635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Buy Dualtooth on Stripe"></a>
-  <a href="https://github.com/edotwedo/Dualtooth/releases/latest"><img src="https://img.shields.io/badge/Download-Dualtooth.exe-blue?style=for-the-badge&logo=windows&logoColor=white" alt="Download Dualtooth.exe"></a>
+  <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900"><img src="https://img.shields.io/badge/Get_Dualtooth_License-$9.00-635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Buy Dualtooth on Stripe ($9)"></a>
+</p>
+
+<p align="center">
+  <i>Instant standalone 64-bit Windows executable (.exe) delivered immediately upon checkout.</i>
 </p>
 
 ---
@@ -26,8 +29,8 @@ Dualtooth extracts Windows' keys safely and creates an automated script to insta
 ## Quick Start (Takes 60 Seconds)
 
 1. **Make sure your devices work in Windows.** (Pair them in Windows first).
-2. Download and run **[Dualtooth.exe](https://github.com/edotwedo/Dualtooth/releases/latest)** (standalone 64-bit executable, nothing to install).
-3. Click your devices and press **CREATE LINUX SCRIPT**.
+2. **[Get a Dualtooth License ($9)](https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900)** to download the standalone 64-bit executable (zero install, runs anywhere).
+3. Open `Dualtooth.exe`, click your devices, and press **CREATE LINUX SCRIPT**.
 4. Reboot into Linux, open a terminal in that folder, and run:
    ```bash
    sudo bash dualtooth-apply.sh
@@ -74,11 +77,13 @@ Dualtooth activates the standard Windows backup privilege (`SeBackupPrivilege`, 
 
 ---
 
-## Support Independent Development
+## Get a License ($9)
 
-Dualtooth is built independently with no telemetry, no tracking, and no subscriptions. If it saved you an hour of registry hex editing, consider supporting ongoing development:
+Dualtooth is built independently with no telemetry, no tracking, and no subscriptions. 
 
-👉 **[Buy a Supporter License / Tip on Stripe](https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900)**
+👉 **[Purchase Dualtooth License ($9.00)](https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900)**
+
+*Instant download link for `Dualtooth.exe` provided immediately after checkout.*
 
 ---
 
