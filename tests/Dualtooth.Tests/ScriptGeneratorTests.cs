@@ -38,4 +38,13 @@ public class ScriptGeneratorTests
     [Fact]
     public void Empty_selection_is_rejected() =>
         Assert.Throws<ArgumentException>(() => ScriptGenerator.Generate(Adapter, [], DateTime.Now));
+
+    [Fact]
+    public void Script_includes_undo_rollback_and_status_diagnostics()
+    {
+        var script = ScriptGenerator.Generate(Adapter, [Device("Logi MX Master 3S")], DateTime.Now);
+
+        Assert.Contains("\"--undo\"", script);
+        Assert.Contains("\"--status\"", script);
+    }
 }

@@ -135,10 +135,26 @@ sealed class LcdDisplay : SkinControl
         }
 
         // Status lines
-        var lineY = marqueeRect.Bottom + S(10);
+        var lineY = marqueeRect.Bottom + S(6);
         const TextFormatFlags lineFlags = TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine;
         TextRenderer.DrawText(g, Line1, Skin.LcdSmall, new Rectangle(pad, lineY, marqueeRect.Width, Skin.LcdSmall.Height), Skin.Glow, lineFlags);
-        TextRenderer.DrawText(g, Line2, Skin.LcdSmall, new Rectangle(pad, lineY + Skin.LcdSmall.Height + S(4), marqueeRect.Width, Skin.LcdSmall.Height), Line2Color, lineFlags);
+        TextRenderer.DrawText(g, Line2, Skin.LcdSmall, new Rectangle(pad, lineY + Skin.LcdSmall.Height + S(2), marqueeRect.Width, Skin.LcdSmall.Height), Line2Color, lineFlags);
+
+        // 16-Byte AES-128 LinkKey / LTK Bit-Matrix Visualizer (OP-1 / Flipper Zero style)
+        int bitY = Height - S(13);
+        using (var dimBrush = new SolidBrush(Color.FromArgb(45, Skin.GlowDim)))
+        using (var litBrush = new SolidBrush(partyFrames > 0 ? Skin.Accent : Skin.Glow))
+        {
+            for (int b = 0; b < 16; b++)
+            {
+                int bx = pad + b * S(15);
+                float wave = MathF.Abs(MathF.Sin(phase * 1.9f + b * 0.65f));
+                int barW = S(12);
+                g.FillRectangle(dimBrush, bx, bitY, barW, S(6));
+                int activeW = Math.Max(S(2), (int)(barW * wave));
+                g.FillRectangle(litBrush, bx, bitY, activeW, S(6));
+            }
+        }
 
         DrawSignalWave(g, new Rectangle(Width - waveWidth - pad, pad, waveWidth, Height - 2 * pad));
         Skin.Scanlines(g, ClientRectangle);

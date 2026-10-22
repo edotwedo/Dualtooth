@@ -39,6 +39,12 @@ public static class BlueZInfo
             sb.Append($"EncSize={keys.KeyLength}\n");
             sb.Append($"EDiv={keys.Ediv}\n");
             sb.Append($"Rand={keys.ERand}\n");
+
+            if (keys.Irk is { Length: 16 } irk)
+            {
+                sb.Append("\n[IdentityResolvingKey]\n");
+                sb.Append($"Key={Convert.ToHexString(irk)}\n");
+            }
         }
 
         return sb.ToString();

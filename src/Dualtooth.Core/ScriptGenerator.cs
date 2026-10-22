@@ -31,6 +31,34 @@ public static class ScriptGenerator
               echo "Please run with sudo:  sudo bash $0"; exit 1
             fi
 
+            if [ "${1:-}" = "--undo" ]; then
+              echo "Restoring previous Linux Bluetooth backups (.bak)..."
+              systemctl stop bluetooth 2>/dev/null || service bluetooth stop 2>/dev/null || true
+              for bak in "$BTDIR"/*/info.bak; do
+                [ -f "$bak" ] || continue
+                mv -f "$bak" "${bak%.bak}"
+                echo "Restored ${bak%.bak}"
+              done
+              systemctl start bluetooth 2>/dev/null || service bluetooth start 2>/dev/null || true
+              echo "Rollback complete."
+              exit 0
+            fi
+
+            if [ "${1:-}" = "--status" ]; then
+              echo "=== Dualtooth Linux BlueZ Diagnostic ==="
+              echo "Target Adapter : $ADAPTER ($BTDIR)"
+              for info in "$BTDIR"/*/info; do
+                [ -f "$info" ] || continue
+                dev=$(basename "$(dirname "$info")")
+                name=$(awk -F= '/^Name=/{print $2}' "$info")
+                has_lk=$(grep -c '^\[LinkKey\]' "$info" || true)
+                has_ltk=$(grep -c '^\[LongTermKey\]' "$info" || true)
+                has_irk=$(grep -c '^\[IdentityResolvingKey\]' "$info" || true)
+                echo "  [$dev] $name  -> LinkKey:$has_lk  BLE-LTK:$has_ltk  IRK:$has_irk"
+              done
+              exit 0
+            fi
+
             if [ ! -d "$BTDIR" ]; then
               echo "Bluetooth adapter $ADAPTER was not found in /var/lib/bluetooth."
               echo "Adapters Linux knows about:"; ls /var/lib/bluetooth 2>/dev/null || echo "  (none)"
@@ -41,9 +69,19 @@ public static class ScriptGenerator
             write_device() {  # $1 = device address, $2 = display name; info file contents on stdin
               local file="$BTDIR/$1/info"
               mkdir -p "$BTDIR/$1"
+              # BLE MAC-drift cleanup: if Linux previously paired this exact device name under a +1/-1 rotated MAC, back it up
+              for existing in "$BTDIR"/*/info; do
+                [ -f "$existing" ] || continue
+                [ "$existing" = "$file" ] && continue
+                if grep -qF "Name=$2" "$existing" 2>/dev/null; then
+                  mv -f "$existing" "$existing.bak"
+                  echo "Cleaned stale BLE MAC-drift entry: $existing -> $existing.bak"
+                fi
+              done
               if [ -f "$file" ]; then cp "$file" "$file.bak"; fi
-              cat > "$file"
-              chmod 600 "$file"
+              cat > "$file.tmp"
+              chmod 600 "$file.tmp"
+              mv -f "$file.tmp" "$file"
               echo "Installed $2 ($1)"
             }
 

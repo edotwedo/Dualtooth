@@ -45,9 +45,24 @@ Dualtooth extracts Windows' keys safely and creates an automated script to insta
 ## What the Linux script does
 
 - Verifies that Linux detects the same physical Bluetooth adapter as Windows.
-- Writes each device's key to `/var/lib/bluetooth/<adapter>/<device>/info` (backing up any existing file as `info.bak`).
+- Writes each device's Classic `LinkKey`, BLE `LongTermKey` (`LTK`, `EDiv`, `ERand`), and BLE Privacy `IdentityResolvingKey` (`IRK`) atomically to `/var/lib/bluetooth/<adapter>/<device>/info` (backing up any existing file as `info.bak`).
+- Automatically detects and cleans up stale BLE MAC-drift folders (`+1/-1` rotated addresses from mice like Logitech MX Master / Keychron).
+- Includes built-in **1-command Rollback** (`sudo bash dualtooth-apply.sh --undo`) and **Live Diagnostics** (`sudo bash dualtooth-apply.sh --status`).
+- Drops a double-clickable **`Dualtooth-Linux-Install.desktop`** launcher right next to the script.
 - Sets `AutoEnable=true` in `/etc/bluetooth/main.conf` so Bluetooth keyboards work at the Linux login screen.
-- Restarts the Linux Bluetooth service (`systemctl restart bluetooth`).
+
+---
+
+## Dualtooth v0.2 vs `bt-dualboot`
+
+| Feature | **Dualtooth v0.2** | `bt-dualboot` (CLI) |
+| :--- | :--- | :--- |
+| **Classic Bluetooth (`LinkKey` BR/EDR)** | ✅ Full 128-bit sync | ✅ Supported |
+| **Bluetooth Low Energy (`LTK` / `EDiv` / `ERand`)** | ✅ Full BLE 4.0 / 5.0+ sync (Legacy & Secure Connections) | ❌ Fails on BLE mice/keyboards |
+| **BLE Privacy / Resolvable MAC (`IRK`)** | ✅ Syncs `[IdentityResolvingKey]` + cleans stale MAC drift | ❌ Unsupported |
+| **Windows 11 BitLocker / Fast Startup** | ✅ Runs natively in Windows + `[🔌 USB]` 1-click export | ❌ Fails when Linux cannot mount encrypted/hibernated NTFS |
+| **Interface** | ✅ Tactile Hardware GUI (4 Skins, 7 Languages, Live `[🔍 X-RAY]`) | ❌ Terminal CLI (`pip` + `chntpw` + manual `/mnt` flags) |
+| **Safety & Rollback** | ✅ Atomic `.tmp` writes + `--undo` rollback + `--status` check | ⚠️ Direct overwrite |
 
 ---
 

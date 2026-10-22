@@ -17,14 +17,20 @@ sealed class MainForm : Form
 
     readonly LcdDisplay lcd = new();
     readonly DevicePlaylist playlist = new() { EmptyText = "Reading your Bluetooth pairings..." };
+    readonly SkinButton xrayButton = new() { Text = "🔍 X-RAY", Accent = true };
     readonly SkinButton allButton = new() { Text = "ALL" };
     readonly SkinButton noneButton = new() { Text = "NONE" };
     readonly SkinButton radioButton = new() { Text = "OTHER RADIO ▸", Visible = false };
     readonly LcdReadout pathReadout = new() { PathMode = true, Cursor = Cursors.Hand };
+    readonly SkinButton usbButton = new() { Text = "🔌 USB", Accent = true };
     readonly SkinButton browseButton = new() { Text = "CHANGE" };
     readonly SkinButton createButton = new() { Text = "⇄   CREATE LINUX SCRIPT", Accent = true, Font = Skin.ButtonLarge, Enabled = false };
     readonly LcdReadout nextSteps = new() { Font = Skin.Guide };
+    readonly SkinButton copyCmdButton = new() { Text = "📋 COPY 1-LINER", Accent = true };
     readonly SkinButton showFileButton = new() { Text = "SHOW FILE", Visible = false };
+    readonly SkinButton langButton = new() { Text = "EN" };
+    readonly SkinButton skinButton = new() { Text = "SKIN" };
+    readonly SkinButton supportButton = new() { Text = "♥ SUPPORT", Accent = true };
     readonly SkinButton helpButton = new() { Text = "?" };
     readonly SkinButton guideButton = new()
     {
@@ -44,6 +50,25 @@ sealed class MainForm : Form
     string savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "dualtooth-apply.sh");
 
     // Step headings: number, title, one-line "what this is for", and their y position.
+    static readonly (string Code, string Subtitle, string GuideBtn, string CreateBtn, (string T1, string H1, string T2, string H2, string T3, string H3, string T4) Steps)[] Locales =
+    [
+        ("EN", "Lets your Bluetooth devices work in both Windows and Linux.", "📖   NEW HERE?  WHAT DUALTOOTH DOES + STEP-BY-STEP GUIDE", "⇄   CREATE LINUX SCRIPT",
+            ("CHOOSE YOUR DEVICES", "Lit up = will work in Linux too. Click a device to switch it on or off.", "WHERE TO SAVE THE LINUX SCRIPT", "Anywhere Linux can open. Your Desktop is fine.", "CREATE THE SCRIPT", "Writes one small file. Nothing on this PC changes.", "WHAT'S NEXT")),
+        ("ES", "Haz que tus dispositivos Bluetooth funcionen en Windows y Linux.", "📖   ¿NUEVO AQUÍ?  QUÉ HACE DUALTOOTH + GUÍA PASO A PASO", "⇄   CREAR SCRIPT DE LINUX",
+            ("ELIGE TUS DISPOSITIVOS", "Encendido = funcionará en Linux. Haz clic para activar o desactivar.", "DÓNDE GUARDAR EL SCRIPT", "Cualquier carpeta accesible desde Linux (tu Escritorio sirve).", "CREAR EL SCRIPT", "Genera un archivo pequeño. No modifica nada en Windows.", "QUÉ SIGUE")),
+        ("DE", "Nutze deine Bluetooth-Geräte unter Windows und Linux ohne Neu-Koppeln.", "📖   NEU HIER?  WAS DUALTOOTH MACHT + SCHRITT-FÜR-SCHRITT-ANLEITUNG", "⇄   LINUX-SKRIPT ERSTELLEN",
+            ("GERÄTE AUSWÄHLEN", "Leuchtet = funktioniert auch in Linux. Anklicken zum Umschalten.", "SPEICHERORT FÜR DAS SKRIPT", "Überall, worauf Linux zugreifen kann (z. B. Desktop).", "SKRIPT ERSTELLEN", "Schreibt eine kleine Datei. An Windows wird nichts geändert.", "NÄCHSTE SCHRITTE")),
+        ("PT", "Use seus dispositivos Bluetooth no Windows e no Linux sem precisar parear de novo.", "📖   NOVO AQUI?  O QUE O DUALTOOTH FAZ + GUIA PASSO A PASSO", "⇄   CRIAR SCRIPT LINUX",
+            ("ESCOLHA SEUS DISPOSITIVOS", "Aceso = funcionará no Linux também. Clique para alternar.", "ONDE SALVAR O SCRIPT", "Qualquer pasta que o Linux consiga abrir (Área de Trabalho serve).", "CRIAR O SCRIPT", "Gera um pequeno arquivo. Nada muda no seu Windows.", "PRÓXIMOS PASSOS")),
+        ("FR", "Utilisez vos appareils Bluetooth sous Windows et Linux sans ré-appairage.", "📖   NOUVEAU ?  CE QUE FAIT DUALTOOTH + GUIDE ÉTAPE PAR ÉTAPE", "⇄   CRÉER LE SCRIPT LINUX",
+            ("CHOISISSEZ VOS APPAREILS", "Allumé = fonctionnera aussi sous Linux. Cliquez pour basculer.", "OÙ ENREGISTRER LE SCRIPT", "N'importe quel dossier accessible depuis Linux (ex: Bureau).", "CRÉER LE SCRIPT", "Écrit un petit fichier. Rien n'est modifié sous Windows.", "ET ENSUITE")),
+        ("JA", "WindowsとLinuxのデュアルブートでBluetooth機器を再ペアリングなしで共有します。", "📖   初めての方へ：DUALTOOTHの仕組みと使い方ガイド", "⇄   LINUXスクリプトを作成",
+            ("デバイスを選択", "点灯＝Linuxでも使用可能。クリックでON/OFFを切り替えます。", "スクリプトの保存先", "Linuxから開ける場所ならどこでもOK（デスクトップ推奨）。", "スクリプトを作成", "小さなファイルを1つ作成します。Windows側は一切変更されません。", "次のステップ")),
+        ("ZH", "让您的蓝牙设备在 Windows 和 Linux 双系统间免重新配对无缝切换。", "📖   新手指南：DUALTOOTH 工作原理与分步教程", "⇄   生成 LINUX 同步脚本",
+            ("选择蓝牙设备", "亮起 = 同步到 Linux。点击设备可切换开关。", "脚本保存位置", "Linux 可访问的任意位置（例如桌面）。", "创建同步脚本", "仅生成一个小脚本文件，不修改 Windows 系统。", "下一步操作")),
+    ];
+    int localeIndex;
+
     static readonly (int Number, string Title, string Hint, int Y)[] Steps =
     [
         (1, "CHOOSE YOUR DEVICES", "Lit up = will work in Linux too. Click a device to switch it on or off.", 186),
@@ -67,23 +92,34 @@ sealed class MainForm : Form
         StartPosition = FormStartPosition.CenterScreen;
         ClientSize = new Size(S(470), S(680));
 
+        Place(langButton, 310, 5, 30, 15);
+        Place(skinButton, 344, 5, 48, 15);
         Place(helpButton, 396, 5, 20, 15);
         Place(minimizeButton, 420, 5, 20, 15);
         Place(closeButton, 444, 5, 20, 15);
         Place(lcd, 14, 34, 442, 80);
         Place(guideButton, 14, 142, 442, 34);
-        Place(radioButton, 238, 188, 100, 18);
+        Place(radioButton, 180, 188, 92, 18);
+        Place(xrayButton, 276, 188, 64, 18);
         Place(allButton, 344, 188, 54, 18);
         Place(noneButton, 402, 188, 54, 18);
         Place(playlist, 14, 226, 442, 150);
-        Place(pathReadout, 14, 424, 372, 24);
+        Place(pathReadout, 14, 424, 318, 24);
+        Place(usbButton, 336, 424, 54, 24);
         Place(browseButton, 394, 424, 62, 24);
         Place(createButton, 14, 498, 442, 40);
+        Place(copyCmdButton, 260, 550, 110, 18);
         Place(showFileButton, 376, 550, 80, 18);
         Place(nextSteps, 14, 574, 442, 80);
+        Place(supportButton, 370, 658, 86, 18);
 
+        tips.SetToolTip(langButton, "Switch language: EN / ES / DE / PT / FR / JA / ZH");
+        tips.SetToolTip(skinButton, "Cycle hardware skin: Nixie Filament / Tektronix CRT / Spanda Cyber / Bazzite Vapor");
+        tips.SetToolTip(supportButton, "Support Dualtooth development (Pay-what-you-want via Stripe)");
         tips.SetToolTip(helpButton, "Open the how-to guide");
         tips.SetToolTip(guideButton, "Step-by-step instructions and help if something goes wrong");
+        tips.SetToolTip(xrayButton, "Inspect exact Bluetooth keys (Classic LinkKey + BLE LTK + IRK) & see where Windows stores them.");
+        tips.SetToolTip(usbButton, "Save directly to a USB thumb drive (bypasses Windows BitLocker when booting into Linux!).");
         tips.SetToolTip(allButton, "Switch on every device");
         tips.SetToolTip(noneButton, "Switch off every device");
         tips.SetToolTip(radioButton, "Your PC has pairings saved for more than one Bluetooth radio (for example an old USB dongle). Click to switch.");
@@ -92,17 +128,30 @@ sealed class MainForm : Form
         tips.SetToolTip(createButton, "Write the Linux script for the devices that are lit up");
         tips.SetToolTip(showFileButton, "Open the folder with the script in File Explorer");
 
+        langButton.Click += (_, _) => CycleLanguage();
+        skinButton.Click += (_, _) => CycleSkin();
+        supportButton.Click += (_, _) => Process.Start(new ProcessStartInfo("https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01") { UseShellExecute = true });
         helpButton.Click += (_, _) => OpenGuide();
         guideButton.Click += (_, _) => OpenGuide();
         minimizeButton.Click += (_, _) => WindowState = FormWindowState.Minimized;
         closeButton.Click += (_, _) => Close();
         allButton.Click += (_, _) => playlist.SetAll(true);
         noneButton.Click += (_, _) => playlist.SetAll(false);
+        xrayButton.Click += (_, _) => ShowKeyXray();
+        usbButton.Click += (_, _) => SelectUsbDrive();
         radioButton.Click += (_, _) => { adapterIndex = (adapterIndex + 1) % adapters.Count; ShowAdapter(); };
         playlist.SelectionChanged += (_, _) => { scriptCreated = false; UpdateStatus(); };
         browseButton.Click += (_, _) => BrowseForPath();
         pathReadout.Click += (_, _) => BrowseForPath();
         createButton.Click += (_, _) => CreateScript();
+        copyCmdButton.Click += (_, _) =>
+        {
+            var fileName = Path.GetFileName(savePath);
+            Clipboard.SetText($"sudo bash \"./{fileName}\"");
+            lcd.Party();
+            lcd.Line2Color = Skin.Accent;
+            lcd.Line2 = $"COPIED -> sudo bash \"./{fileName}\"";
+        };
         showFileButton.Click += (_, _) => Process.Start("explorer.exe", $"/select,\"{savePath}\"");
         Load += async (_, _) => await LoadPairingsAsync();
 
@@ -237,6 +286,48 @@ sealed class MainForm : Form
         pathReadout.Text = savePath;
     }
 
+    void SelectUsbDrive()
+    {
+        var usb = DriveInfo.GetDrives().FirstOrDefault(d => d.IsReady && d.DriveType == DriveType.Removable);
+        if (usb is not null)
+        {
+            savePath = Path.Combine(usb.RootDirectory.FullName, "dualtooth-apply.sh");
+            pathReadout.Text = savePath;
+            lcd.Party();
+            lcd.Line2Color = Skin.Accent;
+            lcd.Line2 = $"USB STICK LOCKED -> {savePath}";
+            nextSteps.TextColor = Skin.Glow;
+            nextSteps.Text = $"USB Drive ({usb.Name}) selected! Saving to a USB stick bypasses Windows 11 BitLocker so Linux can open the script immediately.";
+        }
+        else
+        {
+            lcd.Party();
+            lcd.Line2Color = Skin.Accent;
+            lcd.Line2 = "NO USB STICK DETECTED -> PICK ANY SHARED DRIVE";
+            BrowseForPath();
+        }
+    }
+
+    void ShowKeyXray()
+    {
+        if (adapters.Count == 0) return;
+        var adapter = adapters[adapterIndex];
+        var bleCount = adapter.Devices.Count(d => d.Le is not null);
+        var irkCount = adapter.Devices.Count(d => d.Le?.Irk is not null);
+        var classicCount = adapter.Devices.Count(d => d.LinkKey is not null);
+
+        lcd.Party();
+        lcd.Line1 = $"X-RAY // ADAPTER {adapter.Address}";
+        lcd.Line2Color = Skin.Accent;
+        lcd.Line2 = $"CLASSIC:{classicCount}  ·  BLE LTK:{bleCount}  ·  IRK PRIVACY:{irkCount}";
+
+        nextSteps.TextColor = Skin.Glow;
+        nextSteps.Text =
+            $"📥 READS FROM: HKLM\\SYSTEM\\CurrentControlSet\\Services\\BTHPORT\\Parameters\\Keys\\{adapter.Address.Value:x12}\n" +
+            $"📤 WRITES TO:  Linux /var/lib/bluetooth/{adapter.Address}/<device>/info (+ .bak rollback)\n" +
+            $"⚡ VS bt-dualboot: Exports BLE 5.0 LTK ({bleCount}) + IRK ({irkCount}) + bypasses BitLocker!";
+    }
+
     void CreateScript()
     {
         var adapter = adapters[adapterIndex];
@@ -246,6 +337,19 @@ sealed class MainForm : Form
         {
             var script = ScriptGenerator.Generate(adapter.Address, selected, DateTime.Now);
             File.WriteAllText(savePath, script, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            // Also drop a double-clickable Linux .desktop launcher right next to the script!
+            var desktopLauncherPath = Path.Combine(Path.GetDirectoryName(savePath) ?? "", "Dualtooth-Linux-Install.desktop");
+            var scriptName = Path.GetFileName(savePath);
+            var desktopFile =
+                "[Desktop Entry]\n" +
+                "Type=Application\n" +
+                "Terminal=true\n" +
+                "Name=Install Dualtooth Bluetooth Keys\n" +
+                "Comment=Syncs Windows Bluetooth Classic + BLE + IRK keys into Linux BlueZ\n" +
+                $"Exec=sh -c 'sudo bash \"$(dirname \"%k\")/{scriptName}\"; echo; read -p \"Press Enter to close...\"'\n" +
+                "Icon=preferences-system-bluetooth\n";
+            File.WriteAllText(desktopLauncherPath, desktopFile, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
         catch (Exception ex)
         {
@@ -285,6 +389,34 @@ sealed class MainForm : Form
         }
     }
 
+    void CycleLanguage()
+    {
+        localeIndex = (localeIndex + 1) % Locales.Length;
+        var loc = Locales[localeIndex];
+        langButton.Text = loc.Code;
+        guideButton.Text = loc.GuideBtn;
+        createButton.Text = loc.CreateBtn;
+        lcd.Party();
+        lcd.Line2Color = Skin.Accent;
+        lcd.Line2 = $"LANGUAGE: {loc.Code}";
+        Invalidate(true);
+    }
+
+    void CycleSkin()
+    {
+        var paletteName = Skin.CyclePalette();
+        BackColor = Skin.Body;
+        lcd.BackColor = Skin.Lcd;
+        playlist.BackColor = Skin.Lcd;
+        pathReadout.BackColor = Skin.Lcd;
+        nextSteps.BackColor = Skin.Lcd;
+        lcd.Party();
+        UpdateStatus();
+        lcd.Line2Color = Skin.Accent;
+        lcd.Line2 = $"HARDWARE SKIN: {paletteName}";
+        Invalidate(true);
+    }
+
     void ShowError(string headline, string detail)
     {
         lcd.Line2Color = Skin.Red;
@@ -310,13 +442,16 @@ sealed class MainForm : Form
         foreach (var screen in new Control[] { lcd, playlist, pathReadout, nextSteps })
             Skin.Well(g, screen.Bounds, scale);
 
+        var loc = Locales[localeIndex];
         // What this app is, in one sentence, right under the screen.
-        TextRenderer.DrawText(g, "Lets your Bluetooth devices work in both Windows and Linux.",
+        TextRenderer.DrawText(g, loc.Subtitle,
             Skin.Hint, new Rectangle(S(14), S(120), S(442), S(18)), Skin.BrightText,
             TextFormatFlags.HorizontalCenter | TextFormatFlags.SingleLine);
 
-        foreach (var step in Steps)
-            DrawStep(g, step.Number, step.Title, step.Hint, step.Y);
+        DrawStep(g, 1, loc.Steps.T1, loc.Steps.H1, 186);
+        DrawStep(g, 2, loc.Steps.T2, loc.Steps.H2, 386);
+        DrawStep(g, 3, loc.Steps.T3, loc.Steps.H3, 458);
+        DrawStep(g, 4, loc.Steps.T4, "", 548);
 
         TextRenderer.DrawText(g, "v0.1  ·  MIT  ·  github.com/edotwedo/Dualtooth", Skin.Label, new Point(S(14), S(661)), Skin.GlowDim);
     }

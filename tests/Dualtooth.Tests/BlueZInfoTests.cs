@@ -97,6 +97,21 @@ public class BlueZInfoTests
         Assert.Equal("Classic + LE", device.TransportLabel);
     }
 
+    [Fact]
+    public void Device_with_irk_includes_identity_resolving_key()
+    {
+        var irk = Convert.FromHexString("FFEEDDCCBBAA99887766554433221100");
+        var device = new PairedDevice(new BtAddress(0xC0E15A8F83AC))
+        {
+            Name = "Xbox Controller",
+            Le = new LeKeys(Key, 0, 0, 16, AddressType: 1, Irk: irk),
+        };
+
+        var info = BlueZInfo.Build(device);
+
+        Assert.Contains("[IdentityResolvingKey]\nKey=FFEEDDCCBBAA99887766554433221100\n", info);
+    }
+
     [Theory]
     [InlineData("Evil\nName=x", "EvilName=x")]
     [InlineData("  ", "Unknown device")]
