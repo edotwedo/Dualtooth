@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900"><img src="https://img.shields.io/badge/Get_Dualtooth_License-$9.00-635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Buy Dualtooth on Stripe ($9)"></a>
   &nbsp;&nbsp;
-  <a href="https://edotwedo.github.io/Dualtooth/"><img src="https://img.shields.io/badge/Official_Website-Live-ff9f3a?style=for-the-badge&logo=googlechrome&logoColor=black" alt="Official Website"></a>
+  <a href="https://dualtooth.com"><img src="https://img.shields.io/badge/Official_Website-dualtooth.com-ff9f3a?style=for-the-badge&logo=googlechrome&logoColor=black" alt="Official Website"></a>
 </p>
 
 <p align="center">
