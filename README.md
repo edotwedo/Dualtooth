@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01"><img src="https://img.shields.io/badge/Support_Project-Buy_License_%2F_Tip-635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Buy Dualtooth on Stripe"></a>
+  <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900"><img src="https://img.shields.io/badge/Support_Project-Buy_License_%2F_Tip-635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Buy Dualtooth on Stripe"></a>
   <a href="https://github.com/edotwedo/Dualtooth/releases/latest"><img src="https://img.shields.io/badge/Download-Dualtooth.exe-blue?style=for-the-badge&logo=windows&logoColor=white" alt="Download Dualtooth.exe"></a>
 </p>
 
@@ -78,7 +78,7 @@ Dualtooth activates the standard Windows backup privilege (`SeBackupPrivilege`, 
 
 Dualtooth is built independently with no telemetry, no tracking, and no subscriptions. If it saved you an hour of registry hex editing, consider supporting ongoing development:
 
-👉 **[Buy a Supporter License / Tip on Stripe](https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01)**
+👉 **[Buy a Supporter License / Tip on Stripe](https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900)**
 
 ---
 
