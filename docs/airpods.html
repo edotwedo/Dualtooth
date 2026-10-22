@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to Use AirPods on Windows &amp; Linux Dual-Boot | Dualtooth</title>
+  <meta name="description" content="Stop re-pairing Apple AirPods, AirPods Pro, and AirPods Max when switching between Windows and Linux dual-boot. Sync Bluetooth 5.0 LE pairing keys in 1 click.">
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <style>
+    :root {
+      --bg: #0d0e12; --card-bg: rgba(22, 24, 33, 0.85); --glow: #ff9f3a; --hot: #ffd98a; --accent: #ff6b35;
+      --text: #f5ede6; --muted: #a69b91; --success: #3dd68c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6; padding: 0 20px;
+    }
+    .container { max-width: 860px; margin: 0 auto; padding: 40px 0 80px; }
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 40px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 1.2rem; }
+    .brand img { width: 30px; height: 30px; border-radius: 6px; }
+    h1 { font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.2; font-weight: 800; margin-bottom: 16px; color: var(--hot); }
+    p.lead { font-size: 1.2rem; color: var(--muted); margin-bottom: 30px; }
+    .card { background: var(--card-bg); border: 1px solid rgba(255,159,58,0.2); border-radius: 16px; padding: 32px; margin-bottom: 30px; }
+    h2 { font-size: 1.5rem; color: var(--glow); margin-bottom: 14px; }
+    ul { margin-left: 20px; margin-bottom: 20px; color: var(--muted); }
+    li { margin-bottom: 8px; }
+    .cta-box { text-align: center; background: linear-gradient(180deg, rgba(32,28,38,0.95), rgba(18,16,24,0.98)); border: 2px solid var(--glow); border-radius: 20px; padding: 40px; margin-top: 40px; }
+    .btn { display: inline-flex; background: linear-gradient(135deg, #ff9f3a, #ff5e36); color: #0d0703; font-weight: 800; font-size: 1.2rem; padding: 14px 32px; border-radius: 10px; text-decoration: none; margin-top: 20px; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,110,40,0.5); }
+    code { background: #151720; color: var(--hot); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="index.html" class="brand">
+        <img src="logo.jpg" alt="Dualtooth logo">
+        <span>Dualtooth</span>
+      </a>
+      <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900" style="color: var(--glow); font-weight: 700; text-decoration: none;">Get Dualtooth ($9)</a>
+    </header>
+
+    <h1>Pair AirPods, AirPods Pro &amp; AirPods Max on Windows &amp; Linux Dual-Boot</h1>
+    <p class="lead">
+      Apple AirPods provide incredible noise cancellation and audio quality—until you switch operating systems. If you have to put your AirPods back into the case and hold the pairing button every single reboot, Dualtooth fixes the cryptographic link key conflict.
+    </p>
+
+    <div class="card">
+      <h2>Why Apple AirPods Drop on Dual-Boot</h2>
+      <p style="margin-bottom: 14px; color: var(--muted);">
+        Apple headphones utilize modern Bluetooth Low Energy audio standards. Each time you pair them:
+      </p>
+      <ul>
+        <li>They generate an encrypted <code>LinkKey</code> tied to your Bluetooth controller's hardware address.</li>
+        <li>They establish an active encryption session that overwrites any previously stored session keys on the AirPods.</li>
+        <li>Switching between Windows and Linux causes the AirPods to reject connection because the host OS presents an expired cryptographic credential.</li>
+      </ul>
+      <p style="color: var(--muted);">
+        Fixing this manually requires decoding Sysinternals registry dumps, calculating reverse byte hex notations, and modifying BlueZ <code>info</code> configuration files under <code>/var/lib/bluetooth/</code>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>The Dualtooth Solution</h2>
+      <p style="margin-bottom: 14px; color: var(--muted);">
+        Dualtooth synchronizes your AirPods keys seamlessly:
+      </p>
+      <ul>
+        <li><strong>Automatic Key Extraction:</strong> Reads Windows pairing data with zero risk to your registry.</li>
+        <li><strong>Atomic BlueZ Updates:</strong> Writes clean, timestamped configuration files to Linux.</li>
+        <li><strong>Non-Destructive Rollback:</strong> Includes <code>--undo</code> flag and automatic <code>.bak</code> snapshots.</li>
+      </ul>
+    </div>
+
+    <div class="cta-box">
+      <h2 style="color: var(--text);">Never Re-Pair Your AirPods Again</h2>
+      <p style="color: var(--muted);">One-time $9.00 lifetime license. Instant standalone Windows executable (.exe).</p>
+      <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900" class="btn">Get Dualtooth for AirPods ($9.00)</a>
+      <p style="margin-top: 14px; font-size: 0.85rem; color: var(--muted);">
+        <a href="index.html" style="color: var(--hot); text-decoration: none;">← Back to Dualtooth Homepage</a> · Compatible with AirPods (Gen 1-4), AirPods Pro (1-2), AirPods Max, and Beats.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

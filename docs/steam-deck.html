@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Steam Deck &amp; ROG Ally Dual-Boot Bluetooth Fix | Dualtooth</title>
+  <meta name="description" content="Fix Xbox controllers, wireless earbuds, and Bluetooth keyboards unpairing on Steam Deck &amp; ROG Ally dual-boots (SteamOS, Bazzite &amp; Windows 11).">
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <style>
+    :root {
+      --bg: #0d0e12; --card-bg: rgba(22, 24, 33, 0.85); --glow: #ff9f3a; --hot: #ffd98a; --accent: #ff6b35;
+      --text: #f5ede6; --muted: #a69b91; --success: #3dd68c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6; padding: 0 20px;
+    }
+    .container { max-width: 860px; margin: 0 auto; padding: 40px 0 80px; }
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 40px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 1.2rem; }
+    .brand img { width: 30px; height: 30px; border-radius: 6px; }
+    h1 { font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.2; font-weight: 800; margin-bottom: 16px; color: var(--hot); }
+    p.lead { font-size: 1.2rem; color: var(--muted); margin-bottom: 30px; }
+    .card { background: var(--card-bg); border: 1px solid rgba(255,159,58,0.2); border-radius: 16px; padding: 32px; margin-bottom: 30px; }
+    h2 { font-size: 1.5rem; color: var(--glow); margin-bottom: 14px; }
+    ul { margin-left: 20px; margin-bottom: 20px; color: var(--muted); }
+    li { margin-bottom: 8px; }
+    .cta-box { text-align: center; background: linear-gradient(180deg, rgba(32,28,38,0.95), rgba(18,16,24,0.98)); border: 2px solid var(--glow); border-radius: 20px; padding: 40px; margin-top: 40px; }
+    .btn { display: inline-flex; background: linear-gradient(135deg, #ff9f3a, #ff5e36); color: #0d0703; font-weight: 800; font-size: 1.2rem; padding: 14px 32px; border-radius: 10px; text-decoration: none; margin-top: 20px; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,110,40,0.5); }
+    code { background: #151720; color: var(--hot); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="index.html" class="brand">
+        <img src="logo.jpg" alt="Dualtooth logo">
+        <span>Dualtooth</span>
+      </a>
+      <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900" style="color: var(--glow); font-weight: 700; text-decoration: none;">Get Dualtooth ($9)</a>
+    </header>
+
+    <h1>Seamless Bluetooth on Steam Deck &amp; ROG Ally Dual-Boots (SteamOS &amp; Windows 11)</h1>
+    <p class="lead">
+      Dual-booting your Steam Deck, ASUS ROG Ally, or Lenovo Legion Go with Windows 11 and SteamOS / Bazzite? Stop re-pairing your Xbox controller, AirPods, and wireless keyboard every time you switch operating systems.
+    </p>
+
+    <div class="card">
+      <h2>The Handheld Dual-Boot Pain</h2>
+      <p style="margin-bottom: 14px; color: var(--muted);">
+        When gaming on handhelds, you constantly jump between SteamOS/Bazzite (for native gaming) and Windows 11 (for Game Pass, anti-cheat titles, or Destiny 2 / Call of Duty / Valorant).
+      </p>
+      <ul>
+        <li><strong>Xbox &amp; DualSense Controllers:</strong> Controllers negotiate a single active link key with the host hardware. Booting between SteamOS and Windows breaks connection immediately.</li>
+        <li><strong>AirPods &amp; Wireless Earbuds:</strong> BLE audio peripherals reject connection until you unpair and re-pair from scratch on every boot.</li>
+        <li><strong>MicroSD / USB Export:</strong> SteamOS's read-only immutable filesystem makes manual Linux configuration tricky.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>How Dualtooth Fixes Handhelds</h2>
+      <p style="margin-bottom: 14px; color: var(--muted);">
+        Dualtooth runs directly on Windows 11 on your handheld:
+      </p>
+      <ul>
+        <li><strong>1-Click USB / MicroSD Export:</strong> Dualtooth exports your controller pairing keys and creates an automatic <code>.desktop</code> script directly onto your MicroSD card or flash drive.</li>
+        <li><strong>SteamOS &amp; Bazzite Compatible:</strong> Boot into SteamOS Desktop Mode, double-click the script, enter your sudo password, and your Xbox controller and audio sync permanently.</li>
+        <li><strong>Works With All Handheld Gear:</strong> Xbox Wireless Controller, PS5 DualSense, 8BitDo Pro 2, AirPods, Sony WH-1000XM5, and portable folding keyboards.</li>
+      </ul>
+    </div>
+
+    <div class="cta-box">
+      <h2 style="color: var(--text);">Pair Your Handheld Once. Play Anywhere.</h2>
+      <p style="color: var(--muted);">One-time $9.00 lifetime license. Instant standalone Windows executable (.exe). Zero bloat.</p>
+      <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900" class="btn">Get Dualtooth for Handhelds ($9.00)</a>
+      <p style="margin-top: 14px; font-size: 0.85rem; color: var(--muted);">
+        <a href="index.html" style="color: var(--hot); text-decoration: none;">← Back to Dualtooth Homepage</a> · Tested on Steam Deck, ROG Ally, Legion Go, Bazzite, and SteamOS.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
