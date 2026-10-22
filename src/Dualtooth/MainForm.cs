@@ -130,7 +130,7 @@ sealed class MainForm : Form
 
         langButton.Click += (_, _) => CycleLanguage();
         skinButton.Click += (_, _) => CycleSkin();
-        supportButton.Click += (_, _) => Process.Start(new ProcessStartInfo("https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01") { UseShellExecute = true });
+        supportButton.Click += (_, _) => Process.Start(new ProcessStartInfo("https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900") { UseShellExecute = true });
         helpButton.Click += (_, _) => OpenGuide();
         guideButton.Click += (_, _) => OpenGuide();
         minimizeButton.Click += (_, _) => WindowState = FormWindowState.Minimized;
