@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900"><img src="https://img.shields.io/badge/Get_Dualtooth_License-$9.00-635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Buy Dualtooth on Stripe ($9)"></a>
+  <a href="https://buy.stripe.com/eVqaEZ0CKa5l0Yvahr9AA03"><img src="https://img.shields.io/badge/Get_Dualtooth_License-$4.99-635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Buy Dualtooth on Stripe ($4.99)"></a>
   &nbsp;&nbsp;
   <a href="https://dualtooth.com"><img src="https://img.shields.io/badge/Official_Website-dualtooth.com-ff9f3a?style=for-the-badge&logo=googlechrome&logoColor=black" alt="Official Website"></a>
 </p>
@@ -31,7 +31,7 @@ Dualtooth extracts Windows' keys safely and creates an automated script to insta
 ## Quick Start (Takes 60 Seconds)
 
 1. **Make sure your devices work in Windows.** (Pair them in Windows first).
-2. **[Get a Dualtooth License ($9)](https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900)** to download the standalone 64-bit executable (zero install, runs anywhere).
+2. **[Get a Dualtooth License ($4.99)](https://buy.stripe.com/eVqaEZ0CKa5l0Yvahr9AA03)** to download the standalone 64-bit executable (zero install, runs anywhere).
 3. Open `Dualtooth.exe`, click your devices, and press **CREATE LINUX SCRIPT**.
 4. Reboot into Linux, open a terminal in that folder, and run:
    ```bash
