@@ -1,21 +1,27 @@
-MIT License
+DUALTOOTH DUAL LICENSE AGREEMENT
+
+Dualtooth is dual-licensed under the GNU General Public License v3.0 (for source code) and the Dualtooth Commercial End User License (for official pre-built binaries and proprietary integrations).
+
+==============================================================================
+1. COMMERCIAL / PRE-BUILT BINARY LICENSE
+==============================================================================
+If you download, purchase, or run the official pre-compiled standalone binary (Dualtooth.exe), your use is governed by the Dualtooth Commercial License:
+
+- Single-Seat Lifetime License: $4.99 (one-time purchase).
+- Grants perpetual rights to run Dualtooth.exe on your personal and work machines.
+- Permitted for individual, educational, institutional, and commercial use.
+- Official purchase link: https://buy.stripe.com/eVqaEZ0CKa5l0Yvahr9AA03
+- No telemetry, no DRM, no phone-home tracking, no recurring subscriptions.
+- Official binaries may not be mirrored, re-sold, or re-distributed without written permission.
+
+==============================================================================
+2. OPEN SOURCE / SOURCE CODE LICENSE (GPLv3)
+==============================================================================
+The underlying source code of Dualtooth in this repository is licensed under the GNU General Public License version 3.0 (GPLv3):
 
 Copyright (c) 2026 edotwedo
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details:
+https://www.gnu.org/licenses/gpl-3.0.html

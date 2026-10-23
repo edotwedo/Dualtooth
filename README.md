@@ -79,11 +79,11 @@ Dualtooth activates the standard Windows backup privilege (`SeBackupPrivilege`, 
 
 ---
 
-## Get a License ($9)
+## Get a License ($4.99)
 
 Dualtooth is built independently with no telemetry, no tracking, and no subscriptions. 
 
-👉 **[Purchase Dualtooth License ($9.00)](https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900)**
+👉 **[Purchase Dualtooth License ($4.99)](https://buy.stripe.com/eVqaEZ0CKa5l0Yvahr9AA03)**
 
 *Instant download link for `Dualtooth.exe` provided immediately after checkout.*
 
