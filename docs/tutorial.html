@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Complete Technical Guide to Dual-Boot Bluetooth (BLE 5.0, IRK &amp; BlueZ) | Dualtooth</title>
+  <meta name="description" content="Why Bluetooth devices unpair when dual-booting Windows and Linux, and how to fix BLE 5.0 Identity Resolving Keys (IRK) manually or in 1 click.">
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <style>
+    :root {
+      --bg: #0d0e12; --card-bg: rgba(22, 24, 33, 0.85); --glow: #ff9f3a; --hot: #ffd98a; --accent: #ff6b35;
+      --text: #f5ede6; --muted: #a69b91; --code-bg: #151720; --success: #3dd68c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.7; padding: 0 20px;
+    }
+    .container { max-width: 860px; margin: 0 auto; padding: 40px 0 80px; }
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 40px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 1.2rem; }
+    .brand img { width: 30px; height: 30px; border-radius: 6px; }
+    h1 { font-size: clamp(2.1rem, 4.5vw, 3rem); line-height: 1.2; font-weight: 800; margin-bottom: 18px; color: var(--hot); }
+    p.lead { font-size: 1.25rem; color: var(--muted); margin-bottom: 30px; }
+    .card { background: var(--card-bg); border: 1px solid rgba(255,159,58,0.2); border-radius: 16px; padding: 32px; margin-bottom: 30px; }
+    h2 { font-size: 1.6rem; color: var(--glow); margin-bottom: 16px; }
+    h3 { font-size: 1.25rem; color: var(--hot); margin: 24px 0 10px; }
+    ul, ol { margin-left: 24px; margin-bottom: 20px; color: var(--muted); }
+    li { margin-bottom: 10px; }
+    pre { background: var(--code-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 18px; overflow-x: auto; font-family: monospace; font-size: 0.9rem; color: var(--hot); margin: 16px 0; }
+    code { background: var(--code-bg); color: var(--hot); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+    .cta-box { text-align: center; background: linear-gradient(180deg, rgba(32,28,38,0.95), rgba(18,16,24,0.98)); border: 2px solid var(--glow); border-radius: 20px; padding: 40px; margin-top: 50px; }
+    .btn { display: inline-flex; background: linear-gradient(135deg, #ff9f3a, #ff5e36); color: #0d0703; font-weight: 800; font-size: 1.2rem; padding: 14px 32px; border-radius: 10px; text-decoration: none; margin-top: 20px; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,110,40,0.5); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="index.html" class="brand">
+        <img src="logo.jpg" alt="Dualtooth logo">
+        <span>Dualtooth</span>
+      </a>
+      <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900" style="color: var(--glow); font-weight: 700; text-decoration: none;">Get Dualtooth ($9)</a>
+    </header>
+
+    <h1>Why Bluetooth Unpairs on Dual-Boot (And How to Fix It in 2026)</h1>
+    <p class="lead">
+      The definitive engineering guide to Bluetooth cryptographic link keys, BLE 5.0 Identity Resolving Keys (IRK), and syncing Linux BlueZ with Windows 11.
+    </p>
+
+    <div class="card">
+      <h2>The Cryptographic Root Cause</h2>
+      <p style="margin-bottom: 14px; color: var(--muted);">
+        When you pair a Bluetooth peripheral (like a Logitech MX Master 3S, Keychron keyboard, or AirPods), your PC and the device generate a shared 128-bit cryptographic key. The peripheral only stores <strong>one key per host MAC address</strong>.
+      </p>
+      <ol>
+        <li>You pair the device in Windows: Windows and the mouse generate <strong>Key A</strong>.</li>
+        <li>You reboot into Linux and re-pair: Linux and the mouse negotiate <strong>Key B</strong>.</li>
+        <li>The mouse overwrites Key A with Key B in its non-volatile EEPROM memory.</li>
+        <li>You reboot back into Windows: Windows sends authentication challenge based on Key A. The mouse rejects it.</li>
+      </ol>
+      <p style="color: var(--muted);">
+        The only permanent solution is to make <strong>both operating systems share the exact same cryptographic keys</strong>.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Why Bluetooth 5.0 LE &amp; Modern Peripherals Fail</h2>
+      <p style="margin-bottom: 14px; color: var(--muted);">
+        Older Bluetooth 2.x/3.x devices only used a single <code>LinkKey</code>. Modern Bluetooth 5.0+ Low Energy devices (mice, wireless earbuds, smart pens) use privacy standards with rotating resolvable MAC addresses and store:
+      </p>
+      <ul>
+        <li><code>[IdentityResolvingKey] (IRK)</code>: Allows Linux BlueZ to recognize the peripheral when its broadcast MAC changes.</li>
+        <li><code>[LocalSignatureKey]</code>: Connection authentication cipher.</li>
+        <li><code>LongTermKey (LTK)</code>, <code>EDIV</code>, and <code>ERand</code>.</li>
+      </ul>
+      <p style="color: var(--muted);">
+        Legacy Python scripts (like <code>bt-dualboot</code>) only sync Classic link keys and corrupt or omit the IRK, which leaves modern devices unresponsive.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Method 1: Manual Terminal Sync</h2>
+      <p style="color: var(--muted);">If you prefer doing it manually by hand:</p>
+      
+      <h3>Step 1: Pair in Linux first, then pair in Windows</h3>
+      <p style="color: var(--muted);">Do not delete the pairing in Linux. Reboot to Windows and pair the device normally.</p>
+
+      <h3>Step 2: Dump Windows Registry with PsExec</h3>
+      <pre>psexec.exe -s -i regedit</pre>
+      <p style="color: var(--muted);">Navigate to <code>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\BTHPORT\Parameters\Keys\[AdapterMAC]</code> and export the keys.</p>
+
+      <h3>Step 3: Update BlueZ Config in Linux</h3>
+      <pre>sudo nano /var/lib/bluetooth/[AdapterMAC]/[DeviceMAC]/info</pre>
+      <p style="color: var(--muted);">Paste the exact hex keys into the <code>[IdentityResolvingKey]</code> and <code>[LinkKey]</code> sections, then restart the service:</p>
+      <pre>sudo systemctl restart bluetooth</pre>
+    </div>
+
+    <div class="card">
+      <h2>Method 2: The 1-Click GUI Alternative (Dualtooth)</h2>
+      <p style="margin-bottom: 14px; color: var(--muted);">
+        If you want to skip manual hex editing, endian calculations, or have <strong>BitLocker disk encryption</strong> enabled:
+      </p>
+      <ul>
+        <li><strong>Dualtooth (v0.2.0)</strong> reads your Windows BLE 5.0 IRKs and Classic keys in read-only mode with zero registry risk.</li>
+        <li><strong>BitLocker Safe:</strong> Click <code>[🔌 USB]</code> and Dualtooth writes an auto-executing <code>.desktop</code> script directly onto any FAT32 flash drive.</li>
+        <li>Plug the USB into Linux, run the script, and your Bluetooth devices connect permanently.</li>
+        <li>Includes <code>--undo</code> rollback, live X-Ray inspector, and runs 100% offline.</li>
+      </ul>
+    </div>
+
+    <div class="cta-box">
+      <h2 style="color: var(--text);">Fix Dual-Boot Bluetooth Once and For All</h2>
+      <p style="color: var(--muted);">One-time $9.00 lifetime license. Standalone Windows executable (.exe). 30-day money-back guarantee.</p>
+      <a href="https://buy.stripe.com/9B63cx3OWb9p6iPgFP9AA01?__prefilled_amount=900" class="btn">Get Dualtooth Lifetime Access ($9.00)</a>
+      <p style="margin-top: 16px; font-size: 0.85rem; color: var(--muted);">
+        <a href="index.html" style="color: var(--hot); text-decoration: none;">← Dualtooth Homepage</a> · <a href="logitech-mx-master.html" style="color: var(--hot); text-decoration: none;">Logitech MX Master</a> · <a href="steam-deck.html" style="color: var(--hot); text-decoration: none;">Steam Deck Dual-Boot</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
